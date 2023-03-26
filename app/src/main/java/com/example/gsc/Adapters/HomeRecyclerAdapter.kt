@@ -1,45 +1,38 @@
 package com.example.gsc.Adapters
 
-import android.content.ContentResolver
-import android.content.Context
 import android.content.res.Resources
-import android.net.Uri
-import android.os.Bundle
-import android.util.AttributeSet
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.example.gsc.DataClass.dataClass
-import com.google.android.gms.maps.OnMapReadyCallback
+import com.example.gsc.DataClass.RecentAlert
 import com.example.gsc.R
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.MapView
-import com.google.android.gms.maps.MapsInitializer
 
-class HomeRecyclerAdapter(private val items: ArrayList<dataClass>):RecyclerView.Adapter<viewHolder>() {
+class HomeRecyclerAdapter(private val items: ArrayList<RecentAlert>):RecyclerView.Adapter<viewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): viewHolder {
         val itemView = LayoutInflater.from(parent.context).inflate(R.layout.recyclerviewitem, parent, false)
         return viewHolder(itemView)
     }
-
     override fun onBindViewHolder(holder: viewHolder, position: Int) {
+
         val location = items[position]
-//        holder.textView.text = location.name!!
+        holder.textView.text = location.time.toString()
         Glide.with(holder.itemView)
             .load(getStaticMapUrl(location.latitude!!, location.longitude!!))
             .into(holder.image_map!!)
-
+        Log.d("image",getStaticMapUrl(location.latitude!!, location.longitude!!))
     }
-    override fun getItemCount() = items.size
+    override fun getItemCount(): Int {
+        return items.size
+    }
 }
 class viewHolder(itemView: View) :RecyclerView.ViewHolder(itemView)  {
-//    val textView:TextView = itemView.findViewById(R.id.timeanddate_tv)
+    val textView:TextView = itemView.findViewById(R.id.timeanddate_tv)
     val image_map=itemView.findViewById<ImageView>(R.id.map)
 }
 

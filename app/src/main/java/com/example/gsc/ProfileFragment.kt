@@ -14,16 +14,18 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.example.gsc.DataClass.RecentAlert
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.*
 import org.w3c.dom.Text
 
 class ProfileFragment : Fragment() {
     private lateinit var recyclerView:RecyclerView
     private lateinit var mAuth:FirebaseAuth
-    lateinit var mGoogleSignInClient: GoogleSignInClient
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -38,7 +40,11 @@ class ProfileFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         mAuth= FirebaseAuth.getInstance()
+
+
+
         val currentUser=mAuth.currentUser
+
 
         view.findViewById<TextView>(R.id.profile_name_tv).text= currentUser?.displayName
         view.findViewById<TextView>(R.id.profile_email_tv).text=currentUser?.email
@@ -55,4 +61,6 @@ class ProfileFragment : Fragment() {
             Toast.makeText(activity,"SignOut Successful",Toast.LENGTH_SHORT).show()
         }
     }
+
+
 }

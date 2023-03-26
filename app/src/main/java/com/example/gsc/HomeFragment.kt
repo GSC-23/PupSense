@@ -1,19 +1,29 @@
 package com.example.gsc
 
+import android.location.Location
+import android.location.LocationManager
+import android.os.Build
 import android.os.Bundle
+import android.os.Looper
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
+import android.widget.Toast
+import androidx.core.content.getSystemService
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.gsc.Adapters.HomeRecyclerAdapter
-import com.example.gsc.DataClass.dataClass
+import com.example.gsc.DataClass.RecentAlert
+import com.google.android.gms.location.LocationListener
+import com.google.firebase.firestore.*
 
-private lateinit var RecyclerView:RecyclerView
-class HomeFragment : Fragment() {
-
+class HomeFragment : Fragment() , LocationListener{
+    private var HomeRecyclerAdapter:HomeRecyclerAdapter?= null
+    private lateinit var db: FirebaseFirestore
+    private lateinit var alertList:ArrayList<RecentAlert>
+    private lateinit var RecyclerView:RecyclerView
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -21,29 +31,72 @@ class HomeFragment : Fragment() {
         // Inflate the layout for this fragment
         val view=inflater.inflate(R.layout.fragment_home,container,false)
         RecyclerView = view.findViewById(R.id.rv_map)
+        alertList= ArrayList()
+        db= FirebaseFirestore.getInstance()
+        db.collection("Recent  Alerts")
+            .get()
+            .addOnSuccessListener {result->
+                for(document in result){
+                    val myData=document.toObject(RecentAlert::class.java)
+                    alertList.add(myData)
+                }
+                Log.d("arraysize","${alertList.size}")
+                // Set up the recycler view and notify adapter inside the success listener
+                HomeRecyclerAdapter=HomeRecyclerAdapter(alertList)
+                RecyclerView.adapter=HomeRecyclerAdapter
+                RecyclerView.layoutManager=LinearLayoutManager(requireContext())
+                HomeRecyclerAdapter!!.notifyDataSetChanged()
+            }
+            .addOnFailureListener {exception->
+                Log.d("Answer","Error getting document")
+            }
         return view
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val items= ArrayList<dataClass>()
-        val obj1:dataClass= dataClass(30.970259886942088, 75.6284345320183)
-        items.add(obj1)
-        val obj2:dataClass = dataClass(41.06679809537876, 28.807470708520285)
-        items.add(obj2)
-
-        val obj3:dataClass = dataClass(39.99853337024502, 32.7517672842157)
-        items.add(obj3)
-
-        val obj4:dataClass = dataClass(42.54624511,1.601554)
-        items.add(obj4)
-
-        val obj5:dataClass = dataClass(12.565679,104.990963)
-        items.add(obj5)
-        RecyclerView.adapter=HomeRecyclerAdapter(items)
-        RecyclerView.layoutManager=LinearLayoutManager(requireContext())
-
+        // Remove the code for setting up the recycler view and notifyi ng adapter from here
+        if(HomeRecyclerAdapter!=null){
+            subscribeToUpdates()
+        }
 
     }
 
+    private fun subscribeToUpdates(){
+        db.collection("Recent  Alerts")
+            .addSnapshotListener{querySnapshot,firebaseFirestoreException->
+                firebaseFirestoreException?.let{
+                    Toast.makeText(activity,it.message,Toast.LENGTH_LONG).show()
+                    return@addSnapshotListener
+                }
+
+                val alertList1= mutableListOf<RecentAlert>()
+                for (document in querySnapshot!!){
+                    val mydata=document.toObject(RecentAlert::class.java)
+                    alertList1.add(mydata)
+                }
+
+
+//                querySnapshot?.let {
+//                    alertList.clear()
+//                    for (document in it){
+//                        val myData=document.toObject(RecentAlert::class.java)
+//                        alertList.add(myData)
+//                    }
+//                    HomeRecyclerAdapter!!.notifyDataSetChanged()
+//                }
+                alertList.clear()
+                alertList.addAll(alertList1)
+                HomeRecyclerAdapter!!.notifyDataSetChanged()
+            }
+    }
+
+    override fun onLocationChanged(p0: Location) {
+        TODO("Not yet implemented")
+    }
 }
+
+
+
+
+
