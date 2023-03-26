@@ -1,7 +1,9 @@
 package com.example.gsc.Adapters
 
+import android.content.ContentResolver
 import android.content.Context
 import android.content.res.Resources
+import android.net.Uri
 import android.os.Bundle
 import android.util.AttributeSet
 import android.view.LayoutInflater
@@ -32,6 +34,7 @@ class HomeRecyclerAdapter(private val items: ArrayList<dataClass>):RecyclerView.
         Glide.with(holder.itemView)
             .load(getStaticMapUrl(location.latitude!!, location.longitude!!))
             .into(holder.image_map!!)
+
     }
     override fun getItemCount() = items.size
 }
@@ -45,5 +48,6 @@ private fun getStaticMapUrl(latitude: Double, longitude: Double): String {
     val width = Resources.getSystem().displayMetrics.widthPixels
     val size = "250x${width}" // Set the size of the image
     val color = "#FFB3C1"
-    return "https://maps.googleapis.com/maps/api/staticmap?center=$latitude,$longitude&zoom=15&size=$size&key=$apiKey&markers=color:blue%7Clabel:S%7C$latitude,$longitude"
+
+    return "https://maps.googleapis.com/maps/api/staticmap?center=$latitude,$longitude&zoom=15&size=$size&key=$apiKey&markers=icon:https://appurl.io/DtWgrrStFQ%7Ccolor:blue%7Clabel:S%7C$latitude,$longitude%7C"
 }
