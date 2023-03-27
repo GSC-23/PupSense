@@ -23,10 +23,10 @@ class MainActivity : AppCompatActivity() {
         popupMenu.inflate(R.menu.nav_menu)
         val bottomnav=findViewById<me.ibrahimsn.lib.SmoothBottomBar>(R.id.bottom_nav)
         bottomnav.setupWithNavController(popupMenu.menu,navController)
-        val bar = supportActionBar!!.setBackgroundDrawable(ColorDrawable(resources.getColor(R.color.Fav)))
-
-        val appBarConfiguration = AppBarConfiguration(setOf(R.id.MapsFragment,R.id.previousFragment,R.id.profileFragment))
-        setupActionBarWithNavController(navController,appBarConfiguration)
+//        val bar = supportActionBar!!.setBackgroundDrawable(ColorDrawable(resources.getColor(R.color.Fav)))
+//
+//        val appBarConfiguration = AppBarConfiguration(setOf(R.id.MapsFragment,R.id.previousFragment,R.id.profileFragment))
+//        setupActionBarWithNavController(navController,appBarConfiguration)
 
     }
 }
