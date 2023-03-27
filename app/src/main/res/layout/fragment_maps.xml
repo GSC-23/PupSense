@@ -136,8 +136,11 @@
             android:layout_gravity="center"
             android:layout_marginTop="16dp"
             android:padding="16dp"
+            android:textSize="18sp"
             android:textColor="@color/white"
-            android:background="@drawable/btn_bg"/>
+            android:background="@drawable/btn_bg"
+            android:drawableEnd="@drawable/baseline_pets_white"
+            android:drawablePadding="8dp"/>
     </androidx.appcompat.widget.LinearLayoutCompat>
         </com.google.android.material.card.MaterialCardView>
     </FrameLayout>
