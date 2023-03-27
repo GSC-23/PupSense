@@ -9,7 +9,11 @@
         android:label="Home"
         android:id="@+id/MapsFragment"
         android:name="com.example.gsc.Fragments.MapsFragment"
-        tools:layout="@layout/fragment_maps" />
+        tools:layout="@layout/fragment_maps" >
+        <action
+            android:id="@+id/action_MapsFragment_to_profileFragment"
+            app:destination="@id/profileFragment" />
+    </fragment>
     <fragment
         android:id="@+id/previousFragment"
         android:name="com.example.gsc.Fragments.PreviousFragment"
@@ -20,5 +24,9 @@
         android:id="@+id/profileFragment"
         android:name="com.example.gsc.Fragments.ProfileFragment"
         android:label="Profile"
-        tools:layout="@layout/fragment_profile" />
+        tools:layout="@layout/fragment_profile" >
+        <action
+            android:id="@+id/action_profileFragment_to_MapsFragment"
+            app:destination="@id/MapsFragment" />
+    </fragment>
 </navigation>
