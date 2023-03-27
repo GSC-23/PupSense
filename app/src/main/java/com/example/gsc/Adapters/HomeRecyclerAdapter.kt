@@ -1,5 +1,6 @@
 package com.example.gsc.Adapters
 
+import android.content.Intent
 import android.content.res.Resources
 import android.util.Log
 import android.view.LayoutInflater
@@ -10,22 +11,29 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.gsc.DataClass.RecentAlert
+import com.example.gsc.HelpActivity
+import com.example.gsc.MainActivity
 import com.example.gsc.R
 
-class HomeRecyclerAdapter(private val items: ArrayList<RecentAlert>):RecyclerView.Adapter<viewHolder>() {
+class HomeRecyclerAdapter(private val items: ArrayList<RecentAlert>,private val listener:RecyclerItemClicked):RecyclerView.Adapter<viewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): viewHolder {
         val itemView = LayoutInflater.from(parent.context).inflate(R.layout.recyclerviewitem, parent, false)
-        return viewHolder(itemView)
+        val viewHolder=viewHolder(itemView)
+        itemView.setOnClickListener {
+            listener.onItemClicked(items[viewHolder.adapterPosition])
+        }
+        return viewHolder
+
     }
     override fun onBindViewHolder(holder: viewHolder, position: Int) {
 
         val location = items[position]
         holder.textView.text = location.time.toString()
         Glide.with(holder.itemView)
-            .load(getStaticMapUrl(location.latitude!!, location.longitude!!))
+            .load(getStaticMapUrl(location.latitude, location.longitude))
             .into(holder.image_map!!)
-        Log.d("image",getStaticMapUrl(location.latitude!!, location.longitude!!))
+        Log.d("image",getStaticMapUrl(location.latitude, location.longitude))
     }
     override fun getItemCount(): Int {
         return items.size
@@ -43,4 +51,7 @@ private fun getStaticMapUrl(latitude: Double, longitude: Double): String {
     val color = "#FFB3C1"
 
     return "https://maps.googleapis.com/maps/api/staticmap?center=$latitude,$longitude&zoom=15&size=$size&key=$apiKey&markers=icon:https://appurl.io/DtWgrrStFQ%7Ccolor:blue%7Clabel:S%7C$latitude,$longitude%7C"
+}
+interface RecyclerItemClicked{
+    fun onItemClicked(item:RecentAlert)
 }

@@ -1,5 +1,6 @@
 package com.example.gsc
 
+import android.content.Intent
 import android.location.Location
 import android.location.LocationManager
 import android.os.Build
@@ -15,11 +16,12 @@ import androidx.core.content.getSystemService
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.gsc.Adapters.HomeRecyclerAdapter
+import com.example.gsc.Adapters.RecyclerItemClicked
 import com.example.gsc.DataClass.RecentAlert
 import com.google.android.gms.location.LocationListener
 import com.google.firebase.firestore.*
 
-class HomeFragment : Fragment() , LocationListener{
+class HomeFragment : Fragment(),RecyclerItemClicked {
     private var HomeRecyclerAdapter:HomeRecyclerAdapter?= null
     private lateinit var db: FirebaseFirestore
     private lateinit var alertList:ArrayList<RecentAlert>
@@ -42,7 +44,7 @@ class HomeFragment : Fragment() , LocationListener{
                 }
                 Log.d("arraysize","${alertList.size}")
                 // Set up the recycler view and notify adapter inside the success listener
-                HomeRecyclerAdapter=HomeRecyclerAdapter(alertList)
+                HomeRecyclerAdapter=HomeRecyclerAdapter(alertList,this)
                 RecyclerView.adapter=HomeRecyclerAdapter
                 RecyclerView.layoutManager=LinearLayoutManager(requireContext())
                 HomeRecyclerAdapter!!.notifyDataSetChanged()
@@ -50,6 +52,7 @@ class HomeFragment : Fragment() , LocationListener{
             .addOnFailureListener {exception->
                 Log.d("Answer","Error getting document")
             }
+
         return view
     }
 
@@ -91,10 +94,17 @@ class HomeFragment : Fragment() , LocationListener{
             }
     }
 
-    override fun onLocationChanged(p0: Location) {
-        TODO("Not yet implemented")
+    override fun onItemClicked(item: RecentAlert) {
+
+        val intent= Intent(activity,HelpActivity::class.java)
+        intent.putExtra("latitude",item.latitude)
+        intent.putExtra("longitude",item.longitude)
+        startActivity(intent)
     }
+
+
 }
+
 
 
 

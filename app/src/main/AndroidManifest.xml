@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" >
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -14,12 +14,18 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.GSC"
-        tools:targetApi="31" >
+        tools:targetApi="31">
+        <activity
+            android:name=".PermissionActivity"
+            android:exported="false" />
+        <activity
+            android:name=".HelpActivity"
+            android:exported="false" />
         <activity
             android:name=".SplashScreen"
             android:exported="true"
             android:label="GSC"
-            android:theme="@style/Theme.GSC.NoActionBar" >
+            android:theme="@style/Theme.GSC.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -43,13 +49,10 @@
 
         <activity
             android:name=".MainActivity"
-            android:exported="false" >
-
-        </activity>
-            <activity android:name=".LoginScreen"
-                android:exported="false"
-                >
-            </activity>
+            android:exported="false" />
+        <activity
+            android:name=".LoginScreen"
+            android:exported="false" />
     </application>
 
 </manifest>
