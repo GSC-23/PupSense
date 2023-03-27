@@ -27,6 +27,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 class MapsFragment : Fragment() {
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>
     private lateinit var bottomSheetView: FrameLayout
+    private lateinit var map:GoogleMap
     @SuppressLint("MissingPermission")
     private val callback = OnMapReadyCallback { googleMap ->
         /**
@@ -65,4 +66,9 @@ class MapsFragment : Fragment() {
         bottomSheetBehavior.isDraggable = false
         bottomSheetBehavior.isHideable = false
     }
+
+//    override fun onMapReady(googleMap: GoogleMap) {
+//        map=googleMap
+//
+//    }
 }
