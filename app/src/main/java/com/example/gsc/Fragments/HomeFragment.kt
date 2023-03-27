@@ -1,24 +1,20 @@
-package com.example.gsc
+package com.example.gsc.Fragments
 
 import android.content.Intent
-import android.location.Location
-import android.location.LocationManager
-import android.os.Build
 import android.os.Bundle
-import android.os.Looper
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.core.content.getSystemService
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.gsc.Adapters.HomeRecyclerAdapter
 import com.example.gsc.Adapters.RecyclerItemClicked
 import com.example.gsc.DataClass.RecentAlert
-import com.google.android.gms.location.LocationListener
+import com.example.gsc.HelpActivity
+import com.example.gsc.R
 import com.google.firebase.firestore.*
 
 class HomeFragment : Fragment(),RecyclerItemClicked {
@@ -96,7 +92,7 @@ class HomeFragment : Fragment(),RecyclerItemClicked {
 
     override fun onItemClicked(item: RecentAlert) {
 
-        val intent= Intent(activity,HelpActivity::class.java)
+        val intent= Intent(activity, HelpActivity::class.java)
         intent.putExtra("latitude",item.latitude)
         intent.putExtra("longitude",item.longitude)
         startActivity(intent)

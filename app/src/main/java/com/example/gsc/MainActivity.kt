@@ -25,7 +25,7 @@ class MainActivity : AppCompatActivity() {
         bottomnav.setupWithNavController(popupMenu.menu,navController)
         val bar = supportActionBar!!.setBackgroundDrawable(ColorDrawable(resources.getColor(R.color.Fav)))
 
-        val appBarConfiguration = AppBarConfiguration(setOf(R.id.homeFragment,R.id.previousFragment,R.id.profileFragment))
+        val appBarConfiguration = AppBarConfiguration(setOf(R.id.MapsFragment,R.id.previousFragment,R.id.profileFragment))
         setupActionBarWithNavController(navController,appBarConfiguration)
 
     }

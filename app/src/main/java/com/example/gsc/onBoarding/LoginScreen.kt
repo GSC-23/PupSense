@@ -1,4 +1,4 @@
-package com.example.gsc
+package com.example.gsc.onBoarding
 
 import android.app.Activity
 import android.content.Intent
@@ -7,6 +7,9 @@ import android.widget.Button
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import com.example.gsc.MainActivity
+import com.example.gsc.Permissions.hasLocationPermission
+import com.example.gsc.R
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -14,8 +17,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.ktx.Firebase
-
 
 
 class LoginScreen:AppCompatActivity() {
@@ -27,7 +28,6 @@ class LoginScreen:AppCompatActivity() {
         setContentView(R.layout.login_screen)
 
         mAuth= FirebaseAuth.getInstance()
-
         val gso=GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(getString(R.string.default_web_client_id))
             .requestEmail()
@@ -65,8 +65,13 @@ class LoginScreen:AppCompatActivity() {
         val credential= GoogleAuthProvider.getCredential(account.idToken,null)
         mAuth.signInWithCredential(credential).addOnCompleteListener{
             if(it.isSuccessful){
-                val intent= Intent(this,MainActivity::class.java)
-                startActivity(intent)
+                if(hasLocationPermission(this)){
+                    val intent= Intent(this, MainActivity::class.java)
+                    startActivity(intent)
+                }else{
+                    startActivity(Intent(this,PermissionActivity::class.java))
+                }
+
             }   else{
                 Toast.makeText(this,it.exception.toString(),Toast.LENGTH_SHORT).show()
             }

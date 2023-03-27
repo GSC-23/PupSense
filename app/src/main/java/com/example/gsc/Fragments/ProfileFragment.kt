@@ -1,9 +1,7 @@
-package com.example.gsc
+package com.example.gsc.Fragments
 
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -14,13 +12,9 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.example.gsc.DataClass.RecentAlert
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInClient
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.example.gsc.R
+import com.example.gsc.onBoarding.LoginScreen
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.*
-import org.w3c.dom.Text
 
 class ProfileFragment : Fragment() {
     private lateinit var recyclerView:RecyclerView
