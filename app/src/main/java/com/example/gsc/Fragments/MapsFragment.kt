@@ -103,9 +103,7 @@ class MapsFragment : Fragment(),OnMapReadyCallback{
         geoApiContext = GeoApiContext.Builder().apiKey(API_KEY).build()
         view.findViewById<Button>(R.id.help_button).setOnClickListener {
             startActivity(Intent(requireContext(),HelpActivity::class.java))
-        }
-        view.findViewById<ImageView>(R.id.iv_profile).setOnClickListener {
-            findNavController().navigate(R.id.profileFragment)
+
         }
         val origin=LatLng(31.399175561065167, 75.5353661341174)
 
@@ -148,7 +146,7 @@ class MapsFragment : Fragment(),OnMapReadyCallback{
                     .target(LatLng(location.latitude, location.longitude))
                     .zoom(15f)
                     .build()
-                map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition), 2000, null)
+                map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition), 500, null)
                 map.setMapStyle(style)
 
 //                if (!Places.isInitialized()) {

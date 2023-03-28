@@ -52,6 +52,7 @@ class ProfileFragment : Fragment() {
         view.findViewById<Button>(R.id.profile_signOut).setOnClickListener {
             mAuth.signOut()
             startActivity(Intent(activity, LoginScreen::class.java))
+            requireActivity().finish()
             Toast.makeText(activity,"SignOut Successful",Toast.LENGTH_SHORT).show()
         }
     }

@@ -68,8 +68,10 @@ class LoginScreen:AppCompatActivity() {
                 if(hasLocationPermission(this)){
                     val intent= Intent(this, MainActivity::class.java)
                     startActivity(intent)
+                    finish()
                 }else{
                     startActivity(Intent(this,PermissionActivity::class.java))
+                    finish()
                 }
 
             }   else{

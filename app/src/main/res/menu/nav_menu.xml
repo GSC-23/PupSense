@@ -1,14 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-<item
-    android:id="@+id/MapsFragment"
-    android:icon="@drawable/baseline_pets_24"
-    android:title="Home"
-    />
     <item
         android:id="@+id/previousFragment"
         android:icon="@drawable/baseline_healing_24"
-        android:title="Past"
+        android:title="Previous Saves"
         />
     <item
         android:id="@+id/profileFragment"
