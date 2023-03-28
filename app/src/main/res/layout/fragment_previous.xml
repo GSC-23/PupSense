@@ -1,14 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
     tools:context=".Fragments.PreviousFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="18dp"
+        app:cardBackgroundColor="#FDFDFD"
+        app:cardElevation="16dp"
+        app:cardCornerRadius="16dp"
+        >
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:text="Real stories, Real impact"
+            android:textColor="@color/black"
+            android:fontFamily="@font/bebas_neue"
+            android:textSize="32sp"
+            />
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_previousFragment"
+        android:layout_margin="16dp"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="Second Fragment" />
+        />
 
-</FrameLayout>
+
+</LinearLayout>

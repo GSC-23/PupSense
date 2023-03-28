@@ -77,7 +77,11 @@ dependencies {
     implementation 'com.google.firebase:firebase-firestore-ktx'
     implementation 'com.vmadalin:easypermissions-ktx:1.0.0'
     implementation 'pl.droidsonroids.gif:android-gif-drawable:1.2.19'
-
+    implementation 'com.google.maps:google-maps-services:0.17.0'
+    implementation 'com.google.android.gms:play-services-places:17.0.0'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4'
+    implementation 'com.squareup.okhttp3:okhttp:4.9.1'
+    implementation 'com.squareup.okio:okio:2.10.0'
 
 
 }
