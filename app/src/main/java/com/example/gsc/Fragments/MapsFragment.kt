@@ -2,8 +2,6 @@ package com.example.gsc.Fragments
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.media.Image
 import androidx.fragment.app.Fragment
 
 import android.os.Bundle
@@ -13,45 +11,24 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.FrameLayout
-import android.widget.ImageView
-import android.widget.Toast
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import androidx.navigation.fragment.findNavController
-import com.android.volley.Request
-import com.android.volley.Response
-import com.android.volley.toolbox.JsonObjectRequest
-import com.android.volley.toolbox.Volley
 import com.example.gsc.Constants.API_KEY
 import com.example.gsc.DataClass.RecentAlert
+import com.example.gsc.DataManipulation.getAddress
 import com.example.gsc.HelpActivity
 import com.example.gsc.R
-import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.*
 
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
-import com.google.android.libraries.places.api.Places
-import com.google.android.libraries.places.api.model.RectangularBounds
-import com.google.android.libraries.places.api.model.TypeFilter
-import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.ktx.Firebase
-import com.google.maps.DirectionsApi
 import com.google.maps.GeoApiContext
-import com.google.maps.android.SphericalUtil
-import java.io.IOException
-import kotlin.math.cos
 import kotlinx.coroutines.*
 class MapsFragment : Fragment(),OnMapReadyCallback{
-    private lateinit var mAuth:FirebaseAuth
+    private var mAuth:FirebaseAuth = FirebaseAuth.getInstance()
     private lateinit var db:FirebaseFirestore
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>
     private lateinit var bottomSheetView: FrameLayout
@@ -65,27 +42,58 @@ class MapsFragment : Fragment(),OnMapReadyCallback{
         savedInstanceState: Bundle?
     ): View? {
         val view=inflater.inflate(R.layout.fragment_maps, container, false)
-    alertList=ArrayList<RecentAlert>()
         bottomSheetView=view.findViewById(R.id.frame_modal)
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
-    mAuth= FirebaseAuth.getInstance()
-    val currentUser=mAuth.currentUser
-    fetchData()
-
+        val currentUser=mAuth.currentUser
         return view
     }
 
     private fun fetchData() {
+        val markerList = ArrayList<RecentAlert>()
         db= FirebaseFirestore.getInstance()
         db.collection("Recent  Alerts")
             .get()
             .addOnSuccessListener {result->
             for (document in result){
                 val myData=document.toObject(RecentAlert::class.java)
-                alertList.add(myData)
-                Log.d("Data of firebase",myData.toString())
+                val latitude = myData.latitude
+                val longitude = myData.longitude
+                val time=myData.time
+                markerList.add(myData)
+                val markerOptions = MarkerOptions()
+                    .position(LatLng(latitude, longitude))
+                map.addMarker(markerOptions)
+                if(markerList.size!=0){
+                    markerList.forEach { marker ->
+                        val location = LatLng(marker.latitude,marker.longitude)
+
+                        GlobalScope.launch(Dispatchers.IO) {
+                            val deferredAddress = async {
+                                getAddress(LatLng(latitude, longitude), requireContext())
+                            }
+
+                            val address = deferredAddress.await()
+                            // Update marker title with address if available
+                            if (address != null) {
+                                withContext(Dispatchers.Main) {
+                                    val markerOptions = MarkerOptions()
+                                        .position(location)
+                                        .title(address)
+                                    map.addMarker(markerOptions)
+                                    Log.d("address123",address)
+                                }
+                            } else {
+                                withContext(Dispatchers.Main) {
+                                    val markerOptions = MarkerOptions()
+                                        .position(LatLng(latitude, longitude))
+                                        .title("Couldnt fetch")
+                                }
+                            }
+                        }
+                    }
+
+                }
             }
-                Log.d("Size of array",alertList.size.toString())
             }
             .addOnFailureListener {
                 Log.d("Error","Error getting the document")
@@ -107,6 +115,44 @@ class MapsFragment : Fragment(),OnMapReadyCallback{
         }
         val origin=LatLng(31.399175561065167, 75.5353661341174)
 
+    }
+
+    @SuppressLint("MissingPermission")
+    override fun onMapReady(googleMap: GoogleMap) {
+        map = googleMap
+        map.isMyLocationEnabled = true
+        val style = MapStyleOptions.loadRawResourceStyle(requireContext(), R.raw.map_style)
+        map.clear()
+//        map.setOnMyLocationButtonClickListener()
+        fusedLocationClient.getCurrentLocation(
+            LocationRequest.PRIORITY_HIGH_ACCURACY,
+            null
+        ).addOnSuccessListener { location ->
+            // Check if the location is not null
+            if (location != null) {
+                // Move the camera to the user's current location
+                val cameraPosition = CameraPosition.Builder()
+                    .target(LatLng(location.latitude, location.longitude))
+                    .zoom(15f)
+                    .build()
+                map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition), 500, null)
+                map.setMapStyle(style)
+            }
+            map.uiSettings.apply {
+                isZoomControlsEnabled = false
+                isRotateGesturesEnabled = false
+                isTiltGesturesEnabled = false
+//                isZoomGesturesEnabled = false
+            }
+        }
+
+        fetchData()
+
+
+    }
+    }
+
+//Distance request volley
 //           val queue=Volley.newRequestQueue(requireContext())
 //            val url="https://maps.googleapis.com/maps/api/directions/json?" +
 //                    "origin=${origin.latitude},${origin.longitude}&" +
@@ -125,30 +171,30 @@ class MapsFragment : Fragment(),OnMapReadyCallback{
 //                })
 //            queue.add(jsonObjectRequest)
 
-    }
+//    @SuppressLint("MissingPermission")
+//    override fun onMyLocationButtonClick(): Boolean {
+//        fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+//            // Check if the location is not null
+//            if (location != null) {
+//                // Move the camera to the user's current location
+//                val cameraPosition = CameraPosition.Builder()
+//                    .target(LatLng(location.latitude, location.longitude))
+//                    .zoom(15f)
+//                    .build()
+//                map.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
+//            } else {
+//                // If the location is null, show a toast message
+//                Toast.makeText(
+//                    requireContext(),
+//                    "Unable to get current location",
+//                    Toast.LENGTH_SHORT
+//                ).show()
+//            }
+//        }
+//        return true
+//    }
 
-    @SuppressLint("MissingPermission")
-    override fun onMapReady(googleMap: GoogleMap) {
-        map = googleMap
-        map.isMyLocationEnabled = true
-        val style = MapStyleOptions.loadRawResourceStyle(requireContext(), R.raw.map_style)
-
-        map.clear()
-//        map.setOnMyLocationButtonClickListener()
-        fusedLocationClient.getCurrentLocation(
-            LocationRequest.PRIORITY_HIGH_ACCURACY,
-            null
-        ).addOnSuccessListener { location ->
-            // Check if the location is not null
-            if (location != null) {
-                // Move the camera to the user's current location
-                val cameraPosition = CameraPosition.Builder()
-                    .target(LatLng(location.latitude, location.longitude))
-                    .zoom(15f)
-                    .build()
-                map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition), 500, null)
-                map.setMapStyle(style)
-
+//Radial serach implementation
 //                if (!Places.isInitialized()) {
 //                    Places.initialize(requireContext(), "AIzaSyBWJu44Js9xy8ZFUy1wAsxfSWmgbrtEv18")
 //                }
@@ -197,37 +243,4 @@ class MapsFragment : Fragment(),OnMapReadyCallback{
 //
 //                    })
 //                queue.add(jsonObjectRequest)
-            }
-            map.uiSettings.apply {
-                isZoomControlsEnabled = false
-                isRotateGesturesEnabled = false
-                isTiltGesturesEnabled = false
-//                isZoomGesturesEnabled = false
-            }
-        }
 
-//    @SuppressLint("MissingPermission")
-//    override fun onMyLocationButtonClick(): Boolean {
-//        fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-//            // Check if the location is not null
-//            if (location != null) {
-//                // Move the camera to the user's current location
-//                val cameraPosition = CameraPosition.Builder()
-//                    .target(LatLng(location.latitude, location.longitude))
-//                    .zoom(15f)
-//                    .build()
-//                map.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
-//            } else {
-//                // If the location is null, show a toast message
-//                Toast.makeText(
-//                    requireContext(),
-//                    "Unable to get current location",
-//                    Toast.LENGTH_SHORT
-//                ).show()
-//            }
-//        }
-//        return true
-//    }
-
-    }
-    }
