@@ -48,7 +48,7 @@ class MapsFragment : Fragment(),OnMapReadyCallback{
         return view
     }
 
-    private fun fetchData() {
+    private suspend fun fetchData() {
         val markerList = ArrayList<RecentAlert>()
         db= FirebaseFirestore.getInstance()
         db.collection("Recent  Alerts")
@@ -60,9 +60,15 @@ class MapsFragment : Fragment(),OnMapReadyCallback{
                 val longitude = myData.longitude
                 val time=myData.time
                 markerList.add(myData)
-                val markerOptions = MarkerOptions()
-                    .position(LatLng(latitude, longitude))
-                map.addMarker(markerOptions)
+
+                val deferredAddress = GlobalScope.async {
+                    getAddress(LatLng(latitude, longitude), requireContext())
+                }
+                GlobalScope.launch(Dispatchers.Main){
+                    val markerOptions = MarkerOptions()
+                        .position(LatLng(latitude, longitude))
+                    map.addMarker(markerOptions)
+                }
                 if(markerList.size!=0){
                     markerList.forEach { marker ->
                         val location = LatLng(marker.latitude,marker.longitude)
@@ -144,9 +150,12 @@ class MapsFragment : Fragment(),OnMapReadyCallback{
                 isTiltGesturesEnabled = false
 //                isZoomGesturesEnabled = false
             }
+            map.setPadding(0,340,0,0)
+        }
+        GlobalScope.launch (Dispatchers.IO){
+            fetchData()
         }
 
-        fetchData()
 
 
     }
