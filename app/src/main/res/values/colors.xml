@@ -8,4 +8,5 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="Fav">#0E0E52</color>
+    <color name="shimmer_color">#A8A9AD</color>
 </resources>

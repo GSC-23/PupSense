@@ -2,6 +2,9 @@ package com.example.gsc.Fragments
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.drawable.Drawable
 import androidx.fragment.app.Fragment
 
 import android.os.Bundle
@@ -11,6 +14,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.FrameLayout
+import androidx.core.content.res.ResourcesCompat
+import androidx.core.graphics.drawable.DrawableCompat
 import com.example.gsc.Constants.API_KEY
 import com.example.gsc.DataClass.MarkerDataClass
 import com.example.gsc.DataClass.RecentAlert
@@ -34,7 +39,6 @@ class MapsFragment : Fragment(),OnMapReadyCallback,GoogleMap.OnMarkerClickListen
     private var mAuth:FirebaseAuth = FirebaseAuth.getInstance()
     private var passingLatlng:LatLng = LatLng(0.0,0.0)
     private lateinit var db:FirebaseFirestore
-    private lateinit var marker:ArrayList<Marker>
     private lateinit var markerList1:ArrayList<MarkerDataClass>
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>
     private lateinit var bottomSheetView: FrameLayout
@@ -50,7 +54,7 @@ class MapsFragment : Fragment(),OnMapReadyCallback,GoogleMap.OnMarkerClickListen
         val view=inflater.inflate(R.layout.fragment_maps, container, false)
         bottomSheetView=view.findViewById(R.id.frame_modal)
         markerList1= ArrayList()
-        marker=ArrayList<Marker>()
+//        marker=ArrayList<Marker>()
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
         val currentUser=mAuth.currentUser
         GlobalScope.launch(Dispatchers.IO) {
@@ -82,38 +86,40 @@ class MapsFragment : Fragment(),OnMapReadyCallback,GoogleMap.OnMarkerClickListen
                 GlobalScope.launch(Dispatchers.Main){
                     val markerOptions = MarkerOptions()
                         .position(LatLng(latitude, longitude))
-                    val varMarker=map.addMarker(markerOptions)
-                    varMarker?.let { marker.add(it) }
+                        .icon(fromVectorToBitmap(R.drawable.baseline_pets_24,R.color.black))
+                    map.addMarker(markerOptions)
+//                    val varMarker=map.addMarker(markerOptions)
+//                    varMarker?.let { marker.add(it) }
                 }
-                if(markerList1.size!=0){
-                    markerList1.forEach { marker ->
-                        val location = LatLng(marker.latitude,marker.longitude)
-
-                        GlobalScope.launch(Dispatchers.IO) {
-                            val deferredAddress = async {
-                                getAddress(LatLng(latitude, longitude), requireContext())
-                            }
-
-                            val address = deferredAddress.await()
-                            // Update marker title with address if available
-                            if (address != null) {
-                                withContext(Dispatchers.Main) {
-                                    val markerOptions = MarkerOptions()
-                                        .position(location)
-                                        .title(address)
-                                    map.addMarker(markerOptions)
-                                }
-                            } else {
-                                withContext(Dispatchers.Main) {
-                                    val markerOptions = MarkerOptions()
-                                        .position(LatLng(latitude, longitude))
-                                        .title("Couldnt fetch")
-                                }
-                            }
-                        }
-                    }
-
-                }
+//                if(markerList1.size!=0){
+//                    markerList1.forEach { marker ->
+//                        val location = LatLng(marker.latitude,marker.longitude)
+//
+//                        GlobalScope.launch(Dispatchers.IO) {
+//                            val deferredAddress = async {
+//                                getAddress(LatLng(latitude, longitude), requireContext())
+//                            }
+//
+//                            val address = deferredAddress.await()
+//                            // Update marker title with address if available
+//                            if (address != null) {
+//                                withContext(Dispatchers.Main) {
+//                                    val markerOptions = MarkerOptions()
+//                                        .position(location)
+//                                        .title(address)
+//                                    map.addMarker(markerOptions)
+//                                }
+//                            } else {
+//                                withContext(Dispatchers.Main) {
+//                                    val markerOptions = MarkerOptions()
+//                                        .position(LatLng(latitude, longitude))
+//                                        .title("Couldnt fetch")
+//                                }
+//                            }
+//                        }
+//                    }
+//
+//                }
             }
             }
             .addOnFailureListener {
@@ -167,8 +173,6 @@ class MapsFragment : Fragment(),OnMapReadyCallback,GoogleMap.OnMarkerClickListen
             fetchData()
         }
 
-
-
     }
 
     override fun onMarkerClick(marker: Marker): Boolean {
@@ -185,6 +189,23 @@ class MapsFragment : Fragment(),OnMapReadyCallback,GoogleMap.OnMarkerClickListen
         return true
         }
 
+    private fun fromVectorToBitmap(id:Int,color:Int):BitmapDescriptor{
+        val vectorDrawable: Drawable? = ResourcesCompat.getDrawable(resources,id,null)
+        if(vectorDrawable == null){
+            Log.d("MainActivity","Resource not found.")
+            return BitmapDescriptorFactory.defaultMarker()
+        }
+        val bitmap= Bitmap.createBitmap(
+            vectorDrawable.intrinsicWidth,
+            vectorDrawable.intrinsicHeight,
+            Bitmap.Config.ARGB_8888
+        )
+        val canvas= Canvas(bitmap)
+        vectorDrawable.setBounds(0,0,canvas.width,canvas.height)
+        DrawableCompat.setTint(vectorDrawable,color)
+        vectorDrawable.draw(canvas)
+        return BitmapDescriptorFactory.fromBitmap(bitmap)
+    }
 
     }
 

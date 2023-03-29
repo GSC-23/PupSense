@@ -5,12 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="4dp"
-        >
-
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/cl_helpactivity"
             android:layout_width="match_parent"
@@ -65,10 +59,11 @@
             </com.google.android.material.card.MaterialCardView>
 
             <com.google.android.material.card.MaterialCardView
+                android:layout_margin="8dp"
                 android:id="@+id/cv_image"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:elevation="10dp"
+                app:cardElevation="2dp"
 
                 app:cardCornerRadius="8dp"
                 app:layout_constraintBottom_toBottomOf="parent"
@@ -77,19 +72,47 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/cv_location"
                 android:layout_marginTop="12dp">
-
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
                 <ImageView
                     android:id="@+id/iv_helpHospital"
                     android:layout_width="match_parent"
-                    android:layout_height="200dp"
-                    android:padding="8dp"
-                    android:scaleType="fitCenter"
+                    android:layout_height="250dp"
+                    android:scaleType="centerCrop"
                     android:src="@drawable/baseline_pets_24"
 
                     app:layout_constraintVertical_bias="0.5" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+                        <TextView
+
+                            android:drawablePadding="4dp"
+                            android:id="@+id/tv_distance"
+                            android:paddingStart="8dp"
+                            android:layout_width="0dp"
+                            android:textSize="16sp"
+                            android:layout_weight="4"
+                            android:textStyle="italic"
+                            android:layout_height="30dp"
+                            android:textColor="@color/black"
+                            android:gravity="center_vertical"
+                            />
+                    <ImageView
+
+                        android:layout_width="30dp"
+                        android:padding="4dp"
+                        android:layout_marginEnd="4dp"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="end"
+                        android:src="@drawable/directions"/>
+                    </LinearLayout>
+
+                </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>
