@@ -30,7 +30,6 @@ class HomeRecyclerAdapter(private val items: ArrayList<RecentAlert>,private val 
         Glide.with(holder.itemView)
             .load(getStaticMapUrl(location.latitude, location.longitude))
             .into(holder.image_map!!)
-        Log.d("image",getStaticMapUrl(location.latitude, location.longitude))
     }
     override fun getItemCount(): Int {
         return items.size

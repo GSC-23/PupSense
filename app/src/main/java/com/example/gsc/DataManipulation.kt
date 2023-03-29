@@ -14,6 +14,7 @@ import org.json.JSONObject
 import java.util.*
 
 object DataManipulation {
+
     suspend fun getAddress(location: com.google.android.gms.maps.model.LatLng, context: Context): String? {
         val url = "https://maps.googleapis.com/maps/api/geocode/json?latlng=${location.latitude},${location.longitude}&key=$API_KEY"
         val queue = Volley.newRequestQueue(context)
@@ -46,6 +47,4 @@ object DataManipulation {
         queue.add(jsonObjectRequest)
         return deferredAddress.await()
     }
-
-
 }

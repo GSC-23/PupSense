@@ -12,10 +12,13 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.FrameLayout
 import com.example.gsc.Constants.API_KEY
+import com.example.gsc.DataClass.MarkerDataClass
 import com.example.gsc.DataClass.RecentAlert
 import com.example.gsc.DataManipulation.getAddress
 import com.example.gsc.HelpActivity
+import com.example.gsc.MainActivity
 import com.example.gsc.R
+import com.example.gsc.onBoarding.LoginScreen
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
@@ -27,9 +30,12 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.maps.GeoApiContext
 import kotlinx.coroutines.*
-class MapsFragment : Fragment(),OnMapReadyCallback{
+class MapsFragment : Fragment(),OnMapReadyCallback,GoogleMap.OnMarkerClickListener {
     private var mAuth:FirebaseAuth = FirebaseAuth.getInstance()
+    private var passingLatlng:LatLng = LatLng(0.0,0.0)
     private lateinit var db:FirebaseFirestore
+    private lateinit var marker:ArrayList<Marker>
+    private lateinit var markerList1:ArrayList<MarkerDataClass>
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>
     private lateinit var bottomSheetView: FrameLayout
     private lateinit var map:GoogleMap
@@ -43,34 +49,44 @@ class MapsFragment : Fragment(),OnMapReadyCallback{
     ): View? {
         val view=inflater.inflate(R.layout.fragment_maps, container, false)
         bottomSheetView=view.findViewById(R.id.frame_modal)
+        markerList1= ArrayList()
+        marker=ArrayList<Marker>()
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
         val currentUser=mAuth.currentUser
+        GlobalScope.launch(Dispatchers.IO) {
+            fetchData()
+        }
+        view?.findViewById<Button>(R.id.help_button)?.setOnClickListener {
+            val intent=Intent(requireContext(),HelpActivity::class.java)
+            intent.putExtra("latitude", passingLatlng.latitude)
+            intent.putExtra("longitude", passingLatlng.longitude)
+            startActivity(intent)
+        }
         return view
     }
 
     private suspend fun fetchData() {
-        val markerList = ArrayList<RecentAlert>()
         db= FirebaseFirestore.getInstance()
         db.collection("Recent  Alerts")
             .get()
             .addOnSuccessListener {result->
             for (document in result){
-                val myData=document.toObject(RecentAlert::class.java)
+                val myData=document.toObject(MarkerDataClass::class.java)
                 val latitude = myData.latitude
                 val longitude = myData.longitude
-                val time=myData.time
-                markerList.add(myData)
+                markerList1.add(myData)
 
-                val deferredAddress = GlobalScope.async {
-                    getAddress(LatLng(latitude, longitude), requireContext())
-                }
+//                val deferredAddress = GlobalScope.async {
+//                    getAddress(LatLng(latitude, longitude), requireContext())
+//                }
                 GlobalScope.launch(Dispatchers.Main){
                     val markerOptions = MarkerOptions()
                         .position(LatLng(latitude, longitude))
-                    map.addMarker(markerOptions)
+                    val varMarker=map.addMarker(markerOptions)
+                    varMarker?.let { marker.add(it) }
                 }
-                if(markerList.size!=0){
-                    markerList.forEach { marker ->
+                if(markerList1.size!=0){
+                    markerList1.forEach { marker ->
                         val location = LatLng(marker.latitude,marker.longitude)
 
                         GlobalScope.launch(Dispatchers.IO) {
@@ -86,7 +102,6 @@ class MapsFragment : Fragment(),OnMapReadyCallback{
                                         .position(location)
                                         .title(address)
                                     map.addMarker(markerOptions)
-                                    Log.d("address123",address)
                                 }
                             } else {
                                 withContext(Dispatchers.Main) {
@@ -115,18 +130,13 @@ class MapsFragment : Fragment(),OnMapReadyCallback{
         bottomSheetBehavior.isDraggable = false
         bottomSheetBehavior.isHideable = false
         geoApiContext = GeoApiContext.Builder().apiKey(API_KEY).build()
-        view.findViewById<Button>(R.id.help_button).setOnClickListener {
-            startActivity(Intent(requireContext(),HelpActivity::class.java))
-
-        }
-        val origin=LatLng(31.399175561065167, 75.5353661341174)
-
     }
 
     @SuppressLint("MissingPermission")
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
         map.isMyLocationEnabled = true
+        map.setOnMarkerClickListener(this)
         val style = MapStyleOptions.loadRawResourceStyle(requireContext(), R.raw.map_style)
         map.clear()
 //        map.setOnMyLocationButtonClickListener()
@@ -144,6 +154,7 @@ class MapsFragment : Fragment(),OnMapReadyCallback{
                 map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition), 500, null)
                 map.setMapStyle(style)
             }
+
             map.uiSettings.apply {
                 isZoomControlsEnabled = false
                 isRotateGesturesEnabled = false
@@ -159,7 +170,29 @@ class MapsFragment : Fragment(),OnMapReadyCallback{
 
 
     }
+
+    override fun onMarkerClick(marker: Marker): Boolean {
+        passingLatlng = marker.position
+//        GlobalScope.launch(Dispatchers.IO) {
+//            val deferredAddress = GlobalScope.async {
+//                val deferredAddress = getAddress(marker.position, requireContext())
+//            }
+//            val address = deferredAddress.await()
+//            withContext(Dispatchers.Main){
+//                marker.title=address.toString()
+//            }
+//        }
+        return true
+        }
+
+
     }
+
+
+
+
+
+
 
 //Distance request volley
 //           val queue=Volley.newRequestQueue(requireContext())

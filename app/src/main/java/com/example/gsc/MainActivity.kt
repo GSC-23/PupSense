@@ -13,9 +13,12 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import com.example.gsc.DataClass.MarkerDataClass
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import kotlin.collections.ArrayList
 
 class MainActivity : AppCompatActivity() {
+    lateinit var data:ArrayList<MarkerDataClass>
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -76,4 +79,5 @@ val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_frag
             super.onBackPressed()
         }
     }
+
 }

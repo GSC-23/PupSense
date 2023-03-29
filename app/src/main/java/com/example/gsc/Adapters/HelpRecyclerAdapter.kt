@@ -5,6 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.cardview.widget.CardView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.example.gsc.DataClass.HelpActivityDataClass
@@ -24,24 +25,24 @@ class HelpRecyclerAdapter(private val items: ArrayList<HelpActivityDataClass>) :
     }
 
     override fun onBindViewHolder(holder: helpViewHolder, position: Int) {
-        holder.location.text = "Location of hospital street number, ward N"
+        holder.location.text = items[position].name
         holder.image.setImageResource(R.drawable.baseline_healing_24)
         val isExpandable: Boolean = items[position].isExpandable
-        holder.image.visibility = if (isExpandable) View.VISIBLE else View.GONE
-        holder.location.setOnClickListener{
+        holder.cv_image.visibility = if (isExpandable) View.VISIBLE else View.GONE
+        holder.constrainLayout.setOnClickListener {
             isAnyItemExpanded(position)
             items[position].isExpandable = !items[position].isExpandable
-            notifyItemChanged(position,Unit)
+            notifyItemChanged(position, Unit)
         }
     }
 
     private fun isAnyItemExpanded(position: Int) {
-        val temp=items.indexOfFirst {
+        val temp = items.indexOfFirst {
             it.isExpandable
         }
-        if(temp>=0 && temp!=position){
-            items[temp].isExpandable=false
-            notifyItemChanged(temp,0)
+        if (temp >= 0 && temp != position) {
+            items[temp].isExpandable = false
+            notifyItemChanged(temp, 0)
         }
     }
 
@@ -50,9 +51,9 @@ class HelpRecyclerAdapter(private val items: ArrayList<HelpActivityDataClass>) :
         position: Int,
         payloads: MutableList<Any>
     ) {
-        if(payloads.isNotEmpty() && payloads[0]==0){
+        if (payloads.isNotEmpty() && payloads[0] == 0) {
             holder.collapseExpandedView()
-        }else{
+        } else {
             super.onBindViewHolder(holder, position, payloads)
         }
 
@@ -62,8 +63,9 @@ class HelpRecyclerAdapter(private val items: ArrayList<HelpActivityDataClass>) :
 class helpViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     val location = itemView.findViewById<TextView>(R.id.tv_helpHospital)!!
     val image = itemView.findViewById<ImageView>(R.id.iv_helpHospital)!!
-    val constrainLayout=itemView.findViewById<ConstraintLayout>(R.id.cl_helpactivity)
-    fun collapseExpandedView(){
-        constrainLayout.visibility = View.GONE
+    val constrainLayout = itemView.findViewById<ConstraintLayout>(R.id.cl_helpactivity)
+    val cv_image=itemView.findViewById<CardView>(R.id.cv_image)
+    fun collapseExpandedView() {
+        cv_image.visibility = View.GONE
     }
 }
