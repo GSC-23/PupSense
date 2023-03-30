@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
+    android:background="@drawable/background_rectangle"
     android:layout_height="wrap_content"
     tools:context=".Fragments.ProfileFragment">
 
@@ -71,15 +72,14 @@
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:cardCornerRadius="18dp"
-                    app:strokeColor="@color/black"
-                    app:strokeWidth="2dp">
+                    android:layout_margin="8dp"
+                    app:cardCornerRadius="2dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:orientation="vertical"
-                        android:padding="8dp">
+                        android:padding="16dp">
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -94,17 +94,19 @@
                                 android:padding="4dp"
                                 android:text=" Name - "
                                 android:textColor="@color/black"
-                                android:textSize="24sp"
-                                app:drawableStartCompat="@drawable/baseline_person_24" />
+                                android:textSize="18sp"
+                                app:drawableStartCompat="@drawable/baseline_person_24"
+                                />
 
                             <TextView
                                 android:id="@+id/profile_name_tv"
                                 android:layout_width="0dp"
-                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:layout_height="match_parent"
                                 android:layout_weight="1"
                                 android:text=""
                                 android:textColor="@color/black"
-                                android:textSize="24sp" />
+                                android:textSize="18sp" />
 
 
                         </LinearLayout>
@@ -121,17 +123,20 @@
                                 android:padding="4dp"
                                 android:text=" Address - "
                                 android:textColor="@color/black"
-                                android:textSize="24sp"
+                                android:textSize="18sp"
                                 app:drawableStartCompat="@drawable/baseline_house_24" />
 
                             <TextView
                                 android:id="@+id/profile_address_tv"
                                 android:layout_width="0dp"
+                                android:maxLines="1"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:text=""
+                                android:text="9GXP, Jalandhar, Punjab"
+                                android:ellipsize="end"
+                                android:gravity="center_vertical"
                                 android:textColor="@color/black"
-                                android:textSize="24sp" />
+                                android:textSize="18sp" />
                         </LinearLayout>
 
                         <LinearLayout
@@ -146,7 +151,7 @@
                                 android:padding="4dp"
                                 android:text=" Contact No - "
                                 android:textColor="@color/black"
-                                android:textSize="24sp"
+                                android:textSize="18sp"
                                 app:drawableStartCompat="@drawable/baseline_phone_24" />
 
                             <TextView
@@ -154,9 +159,10 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:text=""
+                                android:gravity="center_vertical"
+                                android:text="+91 78693-97615"
                                 android:textColor="@color/black"
-                                android:textSize="24sp" />
+                                android:textSize="18sp" />
                         </LinearLayout>
 
                         <LinearLayout
@@ -172,17 +178,18 @@
                                 android:padding="4dp"
                                 android:text=" Email - "
                                 android:textColor="@color/black"
-                                android:textSize="24sp"
+                                android:textSize="18sp"
                                 app:drawableStartCompat="@drawable/baseline_mail_24" />
 
                             <TextView
                                 android:id="@+id/profile_email_tv"
                                 android:layout_width="0dp"
-                                android:layout_height="wrap_content"
+                                android:layout_height="match_parent"
                                 android:layout_weight="1"
                                 android:text=""
+                                android:gravity="center_vertical"
                                 android:textColor="@color/black"
-                                android:textSize="24sp" />
+                                android:textSize="18sp" />
                         </LinearLayout>
 
                     </LinearLayout>
@@ -196,25 +203,27 @@
                     android:layout_width="match_parent"
                     android:layout_height="300dp"
                     android:layout_marginTop="16dp"
-                    app:cardCornerRadius="18dp"
-                    app:strokeColor="@color/black"
-                    app:strokeWidth="2dp">
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    app:cardCornerRadius="4dp"
+                 >
 
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/rv_pastHelp"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_margin="4dp"
                         android:padding="16dp" />
 
 
                 </com.google.android.material.card.MaterialCardView>
 
                 <androidx.appcompat.widget.AppCompatButton
-                    android:background="@drawable/profilesignoutbtn"
+                    android:backgroundTint="#FDFDFA"
                     android:id="@+id/profile_signOut"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textColor="@color/white"
+                    android:textColor="@color/black"
                     android:text="Sign Out"
                     android:padding="4dp"
                     android:textSize="16dp"

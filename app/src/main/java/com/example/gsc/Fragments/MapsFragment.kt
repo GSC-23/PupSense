@@ -57,6 +57,7 @@ class MapsFragment : Fragment(),OnMapReadyCallback,GoogleMap.OnMarkerClickListen
     private lateinit var markerList1:ArrayList<MarkerDataClass>
     private lateinit var tvModalView:TextView
     private lateinit var bottomSheetView: FrameLayout
+    private var polylines:Polyline? = null
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>
     private lateinit var map:GoogleMap
     private lateinit var fusedLocationClient: FusedLocationProviderClient
@@ -111,9 +112,10 @@ class MapsFragment : Fragment(),OnMapReadyCallback,GoogleMap.OnMarkerClickListen
             }
     }
 
-    @SuppressLint("MissingPermission")
+    @SuppressLint("MissingPermission", "SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        view.findViewById<TextView>(R.id.map_username_tv).text = "Hello, ${mAuth.currentUser?.displayName?.substringBefore(" ")}"
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
         mapFragment?.getMapAsync(this)
         bottomSheetBehavior = BottomSheetBehavior.from(bottomSheetView)
@@ -187,6 +189,7 @@ class MapsFragment : Fragment(),OnMapReadyCallback,GoogleMap.OnMarkerClickListen
 
     @SuppressLint("MissingPermission")
     override fun onMarkerClick(marker: Marker): Boolean {
+        polylines?.remove()
         tvModalView.text=getAddress(marker.position)
         bottomSheetBehavior.state=BottomSheetBehavior.STATE_EXPANDED
         db.collection("Recent  Alerts")
@@ -252,7 +255,7 @@ class MapsFragment : Fragment(),OnMapReadyCallback,GoogleMap.OnMarkerClickListen
                 map.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 200), 500, null)
 
 
-                map.addPolyline(polylineOptions)
+                polylines=map.addPolyline(polylineOptions)
 
                     val distance = directionsResult.routes[0].legs[0].distance
                     view?.findViewById<TextView>(R.id.tv_maps_distance)?.text =

@@ -198,7 +198,7 @@ class HelpActivity : AppCompatActivity(),directionButtonClicked {
         }.addOnFailureListener { exception ->
             Log.e("Deleted", "Error deleting document: $exception")
         }
-        startActivity(Intent(this,MainActivity::class.java))
+        startActivity(Intent(this,AfterHelp::class.java))
         finish()
     }
 
