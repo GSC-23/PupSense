@@ -23,6 +23,7 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.*
+import com.google.android.gms.maps.GoogleMap.OnMapClickListener
 
 import com.google.android.gms.maps.model.*
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -154,6 +155,9 @@ class MapsFragment : Fragment(),OnMapReadyCallback,GoogleMap.OnMarkerClickListen
         map = googleMap
         map.isMyLocationEnabled = true
         map.setOnMarkerClickListener(this)
+        map.setOnMapClickListener {
+            bottomSheetBehavior.state=BottomSheetBehavior.STATE_COLLAPSED
+        }
         val style = MapStyleOptions.loadRawResourceStyle(requireContext(), R.raw.map_style)
         map.clear()
 //        map.setOnMyLocationButtonClickListener()
@@ -206,6 +210,7 @@ class MapsFragment : Fragment(),OnMapReadyCallback,GoogleMap.OnMarkerClickListen
 
         return true
         }
+
 
 
 //    private fun fromVectorToBitmap(id:Int,color:Int):BitmapDescriptor{
