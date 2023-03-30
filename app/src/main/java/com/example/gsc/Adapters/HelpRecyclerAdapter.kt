@@ -1,8 +1,10 @@
 package com.example.gsc.Adapters
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.cardview.widget.CardView
@@ -12,13 +14,19 @@ import com.bumptech.glide.Glide
 import com.example.gsc.DataClass.HelpActivityDataClass
 import com.example.gsc.HelpActivity
 import com.example.gsc.R
+import com.google.android.gms.maps.model.LatLng
 
-class HelpRecyclerAdapter(private val items: ArrayList<HelpActivityDataClass>) :
+class HelpRecyclerAdapter(private val items:List<HelpActivityDataClass>, private val listener: HelpActivity) :
     RecyclerView.Adapter<helpViewHolder>() {
+    @SuppressLint("MissingInflatedId")
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): helpViewHolder {
         val view =
             LayoutInflater.from(parent.context).inflate(R.layout.help_recycler_item, parent, false)
-        return helpViewHolder(view)
+        val viewHolder=helpViewHolder(view)
+        view.findViewById<ImageView>(R.id.directionBtn).setOnClickListener {
+            listener.onButtonClicked(items[viewHolder.adapterPosition])
+        }
+        return viewHolder
     }
 
     override fun getItemCount(): Int {
@@ -29,7 +37,7 @@ class HelpRecyclerAdapter(private val items: ArrayList<HelpActivityDataClass>) :
         val image=holder.image
         holder.location.text = items[position].name
         holder.image.setImageResource(R.drawable.baseline_healing_24)
-        holder.distance_tv.text="${items[position].rating}/5"
+        holder.distance_tv.text="${items[position].distance} km far"
         val isExpandable: Boolean = items[position].isExpandable
         Glide.with(holder.itemView)
             .load(items[position].image)
@@ -64,6 +72,10 @@ class HelpRecyclerAdapter(private val items: ArrayList<HelpActivityDataClass>) :
         }
 
     }
+}
+
+interface directionButtonClicked {
+    fun onButtonClicked(item:HelpActivityDataClass)
 }
 
 class helpViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {

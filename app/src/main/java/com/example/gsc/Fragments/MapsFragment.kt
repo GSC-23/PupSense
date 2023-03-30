@@ -53,6 +53,7 @@ class MapsFragment : Fragment(),OnMapReadyCallback,GoogleMap.OnMarkerClickListen
     ): View? {
         val view=inflater.inflate(R.layout.fragment_maps, container, false)
         bottomSheetView=view.findViewById(R.id.frame_modal)
+        bottomSheetBehavior = BottomSheetBehavior.from(bottomSheetView)
         markerList1= ArrayList()
 //        marker=ArrayList<Marker>()
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
@@ -86,7 +87,7 @@ class MapsFragment : Fragment(),OnMapReadyCallback,GoogleMap.OnMarkerClickListen
                 GlobalScope.launch(Dispatchers.Main){
                     val markerOptions = MarkerOptions()
                         .position(LatLng(latitude, longitude))
-                        .icon(fromVectorToBitmap(R.drawable.baseline_pets_24,R.color.black))
+//                        .icon(fromVectorToBitmap(R.drawable.baseline_pets_24,R.color.black))
                     map.addMarker(markerOptions)
 //                    val varMarker=map.addMarker(markerOptions)
 //                    varMarker?.let { marker.add(it) }
@@ -132,9 +133,9 @@ class MapsFragment : Fragment(),OnMapReadyCallback,GoogleMap.OnMarkerClickListen
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
         mapFragment?.getMapAsync(this)
         bottomSheetBehavior = BottomSheetBehavior.from(bottomSheetView)
-        bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
-        bottomSheetBehavior.isDraggable = false
-        bottomSheetBehavior.isHideable = false
+        bottomSheetBehavior.peekHeight = 150
+        bottomSheetBehavior.isDraggable = true
+        bottomSheetBehavior.isHideable = true
         geoApiContext = GeoApiContext.Builder().apiKey(API_KEY).build()
     }
 
@@ -189,23 +190,23 @@ class MapsFragment : Fragment(),OnMapReadyCallback,GoogleMap.OnMarkerClickListen
         return true
         }
 
-    private fun fromVectorToBitmap(id:Int,color:Int):BitmapDescriptor{
-        val vectorDrawable: Drawable? = ResourcesCompat.getDrawable(resources,id,null)
-        if(vectorDrawable == null){
-            Log.d("MainActivity","Resource not found.")
-            return BitmapDescriptorFactory.defaultMarker()
-        }
-        val bitmap= Bitmap.createBitmap(
-            vectorDrawable.intrinsicWidth,
-            vectorDrawable.intrinsicHeight,
-            Bitmap.Config.ARGB_8888
-        )
-        val canvas= Canvas(bitmap)
-        vectorDrawable.setBounds(0,0,canvas.width,canvas.height)
-        DrawableCompat.setTint(vectorDrawable,color)
-        vectorDrawable.draw(canvas)
-        return BitmapDescriptorFactory.fromBitmap(bitmap)
-    }
+//    private fun fromVectorToBitmap(id:Int,color:Int):BitmapDescriptor{
+//        val vectorDrawable: Drawable? = ResourcesCompat.getDrawable(resources,id,null)
+//        if(vectorDrawable == null){
+//            Log.d("MainActivity","Resource not found.")
+//            return BitmapDescriptorFactory.defaultMarker()
+//        }
+//        val bitmap= Bitmap.createBitmap(
+//            vectorDrawable.intrinsicWidth,
+//            vectorDrawable.intrinsicHeight,
+//            Bitmap.Config.ARGB_8888
+//        )
+//        val canvas= Canvas(bitmap)
+//        vectorDrawable.setBounds(0,0,canvas.width,canvas.height)
+//        DrawableCompat.setTint(vectorDrawable,color)
+//        vectorDrawable.draw(canvas)
+//        return BitmapDescriptorFactory.fromBitmap(bitmap)
+//    }
 
     }
 
