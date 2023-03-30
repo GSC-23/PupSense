@@ -2,6 +2,10 @@ package com.example.gsc.Fragments
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.drawable.Drawable
 import android.location.Geocoder
 import androidx.fragment.app.Fragment
 
@@ -13,6 +17,10 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.TextView
+import android.widget.Toast
+import androidx.cardview.widget.CardView
+import androidx.core.content.res.ResourcesCompat
+import androidx.core.graphics.drawable.DrawableCompat
 import androidx.lifecycle.lifecycleScope
 import com.example.gsc.Constants.API_KEY
 import com.example.gsc.DataClass.MarkerDataClass
@@ -29,9 +37,16 @@ import com.google.android.gms.maps.model.*
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.maps.DirectionsApi
 import com.google.maps.GeoApiContext
+import com.google.maps.android.PolyUtil
+import com.google.maps.model.DirectionsResult
+import com.google.maps.model.TravelMode
 import kotlinx.coroutines.*
+import org.json.JSONObject
+import org.w3c.dom.Text
 import java.io.IOException
+import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -83,46 +98,12 @@ class MapsFragment : Fragment(),OnMapReadyCallback,GoogleMap.OnMarkerClickListen
                 val longitude = myData.longitude
                 markerList1.add(myData)
 
-//                val deferredAddress = GlobalScope.async {
-//                    getAddress(LatLng(latitude, longitude), requireContext())
-//                }
                 GlobalScope.launch(Dispatchers.Main){
                     val markerOptions = MarkerOptions()
                         .position(LatLng(latitude, longitude))
-//                        .icon(fromVectorToBitmap(R.drawable.baseline_pets_24,R.color.black))
+                        .icon(fromVectorToBitmap(R.drawable.baseline_pets_24,R.color.black))
                     map.addMarker(markerOptions)
-//                    val varMarker=map.addMarker(markerOptions)
-//                    varMarker?.let { marker.add(it) }
                 }
-//                if(markerList1.size!=0){
-//                    markerList1.forEach { marker ->
-//                        val location = LatLng(marker.latitude,marker.longitude)
-//
-//                        GlobalScope.launch(Dispatchers.IO) {
-//                            val deferredAddress = async {
-//                                getAddress(LatLng(latitude, longitude), requireContext())
-//                            }
-//
-//                            val address = deferredAddress.await()
-//                            // Update marker title with address if available
-//                            if (address != null) {
-//                                withContext(Dispatchers.Main) {
-//                                    val markerOptions = MarkerOptions()
-//                                        .position(location)
-//                                        .title(address)
-//                                    map.addMarker(markerOptions)
-//                                }
-//                            } else {
-//                                withContext(Dispatchers.Main) {
-//                                    val markerOptions = MarkerOptions()
-//                                        .position(LatLng(latitude, longitude))
-//                                        .title("Couldnt fetch")
-//                                }
-//                            }
-//                        }
-//                    }
-//
-//                }
             }
             }
             .addOnFailureListener {
@@ -136,7 +117,7 @@ class MapsFragment : Fragment(),OnMapReadyCallback,GoogleMap.OnMarkerClickListen
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
         mapFragment?.getMapAsync(this)
         bottomSheetBehavior = BottomSheetBehavior.from(bottomSheetView)
-        bottomSheetBehavior.peekHeight = 180
+        bottomSheetBehavior.peekHeight = 175
         bottomSheetBehavior.isDraggable = true
         bottomSheetBehavior.isHideable = true
         fusedLocationClient.getCurrentLocation(
@@ -204,33 +185,106 @@ class MapsFragment : Fragment(),OnMapReadyCallback,GoogleMap.OnMarkerClickListen
         return ""
     }
 
+    @SuppressLint("MissingPermission")
     override fun onMarkerClick(marker: Marker): Boolean {
         tvModalView.text=getAddress(marker.position)
         bottomSheetBehavior.state=BottomSheetBehavior.STATE_EXPANDED
+        db.collection("Recent  Alerts")
+            .whereEqualTo("latitude", marker.position.latitude)
+            .whereEqualTo("longitude", marker.position.longitude)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                // Loop through the matching documents
+                for (document in querySnapshot.documents) {
+                    // Access the timestamp field of each document
+                    val timestamp = document.getTimestamp("time")?.toDate()
+                    if (timestamp != null) {
+                        val inputFormat = SimpleDateFormat("EEE MMM dd HH:mm:ss zzzz yyyy", Locale.ENGLISH)
+                        val outputFormat = SimpleDateFormat("MMM dd hh:mm a", Locale.ENGLISH)
+                        val inputDate = inputFormat.parse(timestamp.toString())
+                        val outputDate = outputFormat.format(inputDate!!)
+                        view?.findViewById<TextView>(R.id.tv_maps_time)?.text = outputDate
+                    } else {
+                        Toast.makeText(requireContext(),"Error ocurred while reading database",Toast.LENGTH_SHORT).show()
+                    }
 
+
+                }
+            }
+            .addOnFailureListener { exception ->
+                // Handle any errors
+                Log.w("TimeStamp", "Error getting documents: ", exception)
+            }
+        fusedLocationClient.getCurrentLocation(
+            LocationRequest.PRIORITY_HIGH_ACCURACY,
+            null
+        ).addOnSuccessListener {location->
+            if(location!=null){
+                val origin=com.google.maps.model.LatLng(location.latitude, location.longitude)
+                val destination=com.google.maps.model.LatLng(marker.position.latitude,marker.position.longitude)
+                val directionsResult: DirectionsResult = DirectionsApi.newRequest(geoApiContext)
+                    .origin(origin)
+                    .destination(destination)
+                    .mode(TravelMode.DRIVING)
+                    .await()
+                val points = mutableListOf<LatLng>()
+                val legs = directionsResult.routes[0].legs
+                for (i in 0 until legs.size) {
+                    val steps = legs[i].steps
+                    for (j in 0 until steps.size) {
+                        val polyline = steps[j].polyline
+                        val encodedPoints = polyline.encodedPath
+                        points.addAll(PolyUtil.decode(encodedPoints))
+                    }
+                }
+
+                val polylineOptions = PolylineOptions().apply {
+                    color(Color.BLUE)
+                    width(10f)
+                    addAll(points)
+                }
+                val boundsBuilder = LatLngBounds.builder()
+                for (point in points) {
+                    boundsBuilder.include(point)
+                }
+                val bounds = boundsBuilder.build()
+
+                map.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 200), 500, null)
+
+
+                map.addPolyline(polylineOptions)
+
+                    val distance = directionsResult.routes[0].legs[0].distance
+                    view?.findViewById<TextView>(R.id.tv_maps_distance)?.text =
+                        " | $distance kms from you"
+
+            }
+        }
         return true
         }
-
-
-
-//    private fun fromVectorToBitmap(id:Int,color:Int):BitmapDescriptor{
-//        val vectorDrawable: Drawable? = ResourcesCompat.getDrawable(resources,id,null)
-//        if(vectorDrawable == null){
-//            Log.d("MainActivity","Resource not found.")
-//            return BitmapDescriptorFactory.defaultMarker()
-//        }
-//        val bitmap= Bitmap.createBitmap(
-//            vectorDrawable.intrinsicWidth,
-//            vectorDrawable.intrinsicHeight,
-//            Bitmap.Config.ARGB_8888
-//        )
-//        val canvas= Canvas(bitmap)
-//        vectorDrawable.setBounds(0,0,canvas.width,canvas.height)
-//        DrawableCompat.setTint(vectorDrawable,color)
-//        vectorDrawable.draw(canvas)
-//        return BitmapDescriptorFactory.fromBitmap(bitmap)
-//    }
-
+    override fun onResume() {
+        GlobalScope.launch(Dispatchers.IO) {
+            fetchData()
+        }
+        super.onResume()
+    }
+    private fun fromVectorToBitmap(id:Int,color:Int):BitmapDescriptor{
+        val vectorDrawable: Drawable? = ResourcesCompat.getDrawable(resources,id,null)
+        if(vectorDrawable == null){
+            Log.d("MainActivity","Resource not found.")
+            return BitmapDescriptorFactory.defaultMarker()
+        }
+        val bitmap= Bitmap.createBitmap(
+            vectorDrawable.intrinsicWidth,
+            vectorDrawable.intrinsicHeight,
+            Bitmap.Config.ARGB_8888
+        )
+        val canvas= Canvas(bitmap)
+        vectorDrawable.setBounds(0,0,canvas.width,canvas.height)
+        DrawableCompat.setTint(vectorDrawable,color)
+        vectorDrawable.draw(canvas)
+        return BitmapDescriptorFactory.fromBitmap(bitmap)
+    }
     }
 
 //    @SuppressLint("MissingPermission")

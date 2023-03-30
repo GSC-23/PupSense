@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -84,7 +85,7 @@ class helpViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     val constrainLayout = itemView.findViewById<ConstraintLayout>(R.id.cl_helpactivity)
     val cv_image=itemView.findViewById<CardView>(R.id.cv_image)
     val distance_tv=itemView.findViewById<TextView>(R.id.tv_distance)
-    val cv_location = itemView.findViewById<CardView>(R.id.cv_location)
+    val cv_location = itemView.findViewById<LinearLayout>(R.id.ll_helpactivity)
     fun collapseExpandedView() {
         cv_image.visibility = View.GONE
     }

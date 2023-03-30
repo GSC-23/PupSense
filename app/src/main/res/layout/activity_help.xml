@@ -3,10 +3,25 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".HelpActivity">
+    android:layout_height="wrap_content"
+    tools:context=".HelpActivity"
+    android:background="@drawable/background_rectangle">
 
-    <LinearLayout
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:src="@drawable/background_rectangle" />
+
+        <LinearLayout
         android:id="@+id/ll1"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -18,23 +33,19 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.5">
 
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="20dp"
-            app:cardCornerRadius="8dp"
-            app:cardElevation="16dp">
 
             <TextView
+                android:layout_margin="8dp"
                 android:id="@+id/textView2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:padding="18dp"
                 android:text="Hospitals Nearby"
+                android:background="#FDFDFD"
                 android:textColor="@color/black"
                 android:textSize="32sp"
                 android:textStyle="bold" />
-        </com.google.android.material.card.MaterialCardView>
+
 
         <com.facebook.shimmer.ShimmerFrameLayout
             android:id="@+id/shimmer_layout"
@@ -43,6 +54,7 @@
             android:layout_marginTop="8dp">
 
             <LinearLayout
+
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical">
@@ -67,13 +79,14 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_hospitals"
             android:layout_width="match_parent"
-            android:layout_height="450dp"
+            android:layout_height="500dp"
             android:orientation="vertical"
             android:visibility="gone"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
 
     </LinearLayout>
+    </FrameLayout>
 
     <TextView
         android:id="@+id/textView3"
@@ -118,26 +131,25 @@
         android:padding="4dp"
         android:text="+91 999999999"
         android:textSize="14sp"
-        app:layout_constraintBottom_toTopOf="@id/btn"
+        app:layout_constraintBottom_toTopOf="@id/btn_saved"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent" />
 
     <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/btn"
+        android:id="@+id/btn_saved"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_marginBottom="32dp"
         android:background="@drawable/btn_bg"
-        android:backgroundTint="#353652"
+        android:onClick="onSavedBtnClicked"
+        android:backgroundTint="#00e500"
         android:text="Saved"
         android:textColor="@color/white"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent" />
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

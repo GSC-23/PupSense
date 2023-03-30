@@ -7,6 +7,8 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Button
+import android.widget.Toast
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.android.volley.Request
@@ -21,6 +23,7 @@ import com.facebook.shimmer.ShimmerFrameLayout
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.libraries.places.api.Places
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.maps.DirectionsApi
 import com.google.maps.GeoApiContext
 import com.google.maps.model.DirectionsResult
@@ -41,7 +44,6 @@ class HelpActivity : AppCompatActivity(),directionButtonClicked {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_help)
-
         data=ArrayList<HelpActivityDataClass>()
         recyclerView=findViewById(R.id.rv_hospitals)
         shimmerLayout=findViewById(R.id.shimmer_layout)
@@ -64,66 +66,100 @@ class HelpActivity : AppCompatActivity(),directionButtonClicked {
             .build()
 
         if (!Places.isInitialized()) {
-            Places.initialize(this, "AIzaSyBWJu44Js9xy8ZFUy1wAsxfSWmgbrtEv18")
+            Places.initialize(this, API_KEY)
         }
 
         val placesClient = Places.createClient(this)
-        val radius = 3000 // in meters
+        val radius = 2000 // in meters
         val type = "veterinary_care"
-        val apiKey = "AIzaSyBWJu44Js9xy8ZFUy1wAsxfSWmgbrtEv18"
 
         val queue = Volley.newRequestQueue(this)
-        val url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=$latitude,$longitude&radius=$radius&type=$type&key=$apiKey"
+        val url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=$latitude,$longitude&radius=$radius&type=$type&key=$API_KEY"
 
 
         val jsonObjectRequest = JsonObjectRequest(Request.Method.GET, url, null,
             { response ->
                 val JsonArray=response.getJSONArray("results")
+                if(JsonArray.length()==0){
+                    runOnUiThread {
+                        shimmerLayout.stopShimmer()
+                        shimmerLayout.visibility = View.GONE
+                        Toast.makeText(this, "No hospitals nearby !!", Toast.LENGTH_SHORT).show()
+                    }
+                }
 
-                for (i in 0 until JsonArray.length()){
-                    val JsonObject=JsonArray.getJSONObject(i)
-                    val name=JsonObject.getString("name")
-                    var address= ""
+                val data = mutableListOf<HelpActivityDataClass>()
+                for (i in 0 until JsonArray.length()) {
+                    val JsonObject = JsonArray.getJSONObject(i)
+                    val name = JsonObject.getString("name")
+                    var address = ""
                     if (JsonObject.has("plus_code") && !JsonObject.isNull("plus_code")) {
                         address = JsonObject.getJSONObject("plus_code").getString("compound_code")
                     }
 
-                    val origin=com.google.maps.model.LatLng(latitude, longitude)
-                    val destination=com.google.maps.model.LatLng(JsonObject.getJSONObject("geometry").getJSONObject("location").getString("lat").toDouble(),JsonObject.getJSONObject("geometry").getJSONObject("location").getString("lng").toDouble())
-                            val directionsResult: DirectionsResult = DirectionsApi.newRequest(context)
-                                .origin(origin)
-                                .destination(destination)
-                                .mode(TravelMode.DRIVING)
-                                .await()
-                            val polyline = directionsResult.routes[0].overviewPolyline
-                    val distance = directionsResult.routes[0].legs[0].distance
-                            val staticMapUrl = "https://maps.googleapis.com/maps/api/staticmap" +
-                                    "?size=600x400" +"&zoom=13" +
-                                    "&maptype=roadmap" +
-                                    "&path=enc:${polyline.encodedPath}" +
-                                    "&markers=color:green|label:S|${origin}" +
-                                    "&markers=color:red|label:D|${destination}" +
-                                    "&key=$API_KEY"
-                            data.add(HelpActivityDataClass(name ,address,staticMapUrl,origin,destination,distance.humanReadable.substringBefore(" ").toDouble()))
-                    helpRecyclerAdapter= HelpRecyclerAdapter(data.sortedBy { it.distance },this)
-                    recyclerView.adapter = helpRecyclerAdapter
-                    helpRecyclerAdapter.notifyDataSetChanged()
-                    if (helpRecyclerAdapter.itemCount > 0) {
-                        // RecyclerView is ready to display data
-                        GlobalScope.launch(Dispatchers.Main) {
+                    val origin = com.google.maps.model.LatLng(latitude, longitude)
 
+                    val destination = com.google.maps.model.LatLng(
+                        JsonObject.getJSONObject("geometry").getJSONObject("location")
+                            .getString("lat").toDouble(),
+                        JsonObject.getJSONObject("geometry").getJSONObject("location")
+                            .getString("lng").toDouble()
+                    )
+
+                    data.add(HelpActivityDataClass(name, address, destination = destination))
+                }
+                GlobalScope.launch(Dispatchers.IO){
+                    val directionsResults = mutableListOf<DirectionsResult>()
+                    for (destination in data.map { it.destination }) {
+                        val directionsResult = DirectionsApi.newRequest(context)
+                            .origin(com.google.maps.model.LatLng(latitude, longitude))
+                            .destination(destination)
+                            .mode(TravelMode.DRIVING)
+                            .await()
+
+                        directionsResults.add(directionsResult)
+                    }
+                    val newData = mutableListOf<HelpActivityDataClass>()
+                    for ((i, directionsResult) in directionsResults.withIndex()) {
+                        val JsonObject = JsonArray.getJSONObject(i)
+                        val polyline = directionsResult.routes[0].overviewPolyline
+                        val distance = directionsResult.routes[0].legs[0].distance
+                        val origin = com.google.maps.model.LatLng(latitude, longitude)
+                        val destination:com.google.maps.model.LatLng = com.google.maps.model.LatLng(JsonObject.getJSONObject("geometry").getJSONObject("location").getString("lat").toDouble(), JsonObject.getJSONObject("geometry").getJSONObject("location").getString("lng").toDouble())
+                        val staticMapUrl = "https://maps.googleapis.com/maps/api/staticmap" +
+                                "?size=600x400" + "&zoom=13" +
+                                "&maptype=roadmap"+"&path=enc:${polyline.encodedPath}" +
+                                "&markers=color:green|label:S|${origin}" +
+                                "&markers=color:red|label:D|${destination}" +
+                                "&key=$API_KEY"
+                        val name = JsonObject.getString("name")
+                        var address = ""
+                        if (JsonObject.has("plus_code") && !JsonObject.isNull("plus_code")) {
+                            address = JsonObject.getJSONObject("plus_code").getString("compound_code")
+                        }
+                        newData.add(HelpActivityDataClass(name, address, staticMapUrl, origin, destination, distance.humanReadable.substringBefore(" ").toDouble()))
+                    }
+                    data.clear()
+                    data.addAll(newData)
+                    helpRecyclerAdapter= HelpRecyclerAdapter(data,this@HelpActivity)
+                    runOnUiThread {
+                        recyclerView.adapter = helpRecyclerAdapter
+                        helpRecyclerAdapter?.notifyDataSetChanged()
+
+
+                        if (helpRecyclerAdapter?.itemCount ?: 0 > 0) {
+                            // RecyclerView is ready to display data
                             shimmerLayout.stopShimmer()
                             shimmerLayout.visibility = View.GONE
                             recyclerView.visibility = View.VISIBLE
-                        }
-                    } else {
-                        // RecyclerView is not ready to display data
-                        GlobalScope.launch(Dispatchers.Main) {
+                        } else {
+                            // RecyclerView is not ready to display data
                             shimmerLayout.startShimmer()
                             shimmerLayout.visibility = View.VISIBLE
                             recyclerView.visibility = View.GONE
                         }
                     }
+
                 }
             },
             { error ->
@@ -147,8 +183,23 @@ class HelpActivity : AppCompatActivity(),directionButtonClicked {
 
 // Start the Google Maps app to show the route and distance
         startActivity(mapIntent)
+    }
 
+    fun onSavedBtnClicked(view: View) {
+        val db = FirebaseFirestore.getInstance()
+        val locationsRef = db.collection("Recent  Alerts")
+        val query = locationsRef.whereEqualTo("latitude", latitude)
+            .whereEqualTo("longitude", longitude)
 
+        query.get().addOnSuccessListener { documents ->
+            for (document in documents) {
+                document.reference.delete()
+            }
+        }.addOnFailureListener { exception ->
+            Log.e("Deleted", "Error deleting document: $exception")
+        }
+        startActivity(Intent(this,MainActivity::class.java))
+        finish()
     }
 
 }
