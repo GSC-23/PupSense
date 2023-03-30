@@ -68,7 +68,7 @@ class HelpActivity : AppCompatActivity(),directionButtonClicked {
         }
 
         val placesClient = Places.createClient(this)
-        val radius = 5000 // in meters
+        val radius = 3000 // in meters
         val type = "veterinary_care"
         val apiKey = "AIzaSyBWJu44Js9xy8ZFUy1wAsxfSWmgbrtEv18"
 
@@ -79,10 +79,8 @@ class HelpActivity : AppCompatActivity(),directionButtonClicked {
         val jsonObjectRequest = JsonObjectRequest(Request.Method.GET, url, null,
             { response ->
                 val JsonArray=response.getJSONArray("results")
-                Log.d("Aaye","${JsonArray}")
 
                 for (i in 0 until JsonArray.length()){
-
                     val JsonObject=JsonArray.getJSONObject(i)
                     val name=JsonObject.getString("name")
                     var address= ""

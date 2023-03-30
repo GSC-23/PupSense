@@ -2,9 +2,7 @@ package com.example.gsc.Fragments
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.drawable.Drawable
+import android.location.Geocoder
 import androidx.fragment.app.Fragment
 
 import android.os.Bundle
@@ -14,16 +12,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.FrameLayout
-import androidx.core.content.res.ResourcesCompat
-import androidx.core.graphics.drawable.DrawableCompat
+import android.widget.TextView
+import androidx.lifecycle.lifecycleScope
 import com.example.gsc.Constants.API_KEY
 import com.example.gsc.DataClass.MarkerDataClass
 import com.example.gsc.DataClass.RecentAlert
-import com.example.gsc.DataManipulation.getAddress
 import com.example.gsc.HelpActivity
-import com.example.gsc.MainActivity
 import com.example.gsc.R
-import com.example.gsc.onBoarding.LoginScreen
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
@@ -35,13 +30,18 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.maps.GeoApiContext
 import kotlinx.coroutines.*
+import java.io.IOException
+import java.util.*
+import kotlin.collections.ArrayList
+
 class MapsFragment : Fragment(),OnMapReadyCallback,GoogleMap.OnMarkerClickListener {
     private var mAuth:FirebaseAuth = FirebaseAuth.getInstance()
     private var passingLatlng:LatLng = LatLng(0.0,0.0)
     private lateinit var db:FirebaseFirestore
     private lateinit var markerList1:ArrayList<MarkerDataClass>
-    private lateinit var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>
+    private lateinit var tvModalView:TextView
     private lateinit var bottomSheetView: FrameLayout
+    private lateinit var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>
     private lateinit var map:GoogleMap
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var alertList: ArrayList<RecentAlert>
@@ -55,6 +55,7 @@ class MapsFragment : Fragment(),OnMapReadyCallback,GoogleMap.OnMarkerClickListen
         bottomSheetView=view.findViewById(R.id.frame_modal)
         bottomSheetBehavior = BottomSheetBehavior.from(bottomSheetView)
         markerList1= ArrayList()
+        tvModalView=view.findViewById(R.id.tv_address_modal)
 //        marker=ArrayList<Marker>()
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
         val currentUser=mAuth.currentUser
@@ -128,14 +129,23 @@ class MapsFragment : Fragment(),OnMapReadyCallback,GoogleMap.OnMarkerClickListen
             }
     }
 
+    @SuppressLint("MissingPermission")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
         mapFragment?.getMapAsync(this)
         bottomSheetBehavior = BottomSheetBehavior.from(bottomSheetView)
-        bottomSheetBehavior.peekHeight = 150
+        bottomSheetBehavior.peekHeight = 180
         bottomSheetBehavior.isDraggable = true
         bottomSheetBehavior.isHideable = true
+        fusedLocationClient.getCurrentLocation(
+            LocationRequest.PRIORITY_HIGH_ACCURACY,
+            null
+        ).addOnSuccessListener {location->
+            if(location!=null){
+                view.findViewById<TextView>(R.id.map_tv_location).text= getAddress(LatLng(location.latitude,location.longitude))
+            }
+        }
         geoApiContext = GeoApiContext.Builder().apiKey(API_KEY).build()
     }
 
@@ -176,19 +186,27 @@ class MapsFragment : Fragment(),OnMapReadyCallback,GoogleMap.OnMarkerClickListen
 
     }
 
+    private fun getAddress(position:LatLng):String{
+        val geocoder = Geocoder(requireContext(), Locale.getDefault())
+        passingLatlng = position
+        try {
+            val addresses = geocoder.getFromLocation(passingLatlng.latitude, passingLatlng.longitude, 1)
+            if (addresses!!.isNotEmpty()) {
+                return addresses[0].getAddressLine(0)
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+        return ""
+    }
+
     override fun onMarkerClick(marker: Marker): Boolean {
-        passingLatlng = marker.position
-//        GlobalScope.launch(Dispatchers.IO) {
-//            val deferredAddress = GlobalScope.async {
-//                val deferredAddress = getAddress(marker.position, requireContext())
-//            }
-//            val address = deferredAddress.await()
-//            withContext(Dispatchers.Main){
-//                marker.title=address.toString()
-//            }
-//        }
+        tvModalView.text=getAddress(marker.position)
+        bottomSheetBehavior.state=BottomSheetBehavior.STATE_EXPANDED
+
         return true
         }
+
 
 //    private fun fromVectorToBitmap(id:Int,color:Int):BitmapDescriptor{
 //        val vectorDrawable: Drawable? = ResourcesCompat.getDrawable(resources,id,null)
@@ -209,31 +227,6 @@ class MapsFragment : Fragment(),OnMapReadyCallback,GoogleMap.OnMarkerClickListen
 //    }
 
     }
-
-
-
-
-
-
-
-//Distance request volley
-//           val queue=Volley.newRequestQueue(requireContext())
-//            val url="https://maps.googleapis.com/maps/api/directions/json?" +
-//                    "origin=${origin.latitude},${origin.longitude}&" +
-//                    "destination=31.39458252816213, 75.54150787910709&" +
-//                    "key=$API_KEY"
-//            val jsonObjectRequest = JsonObjectRequest(Request.Method.GET, url, null,
-//                { response ->
-//                    // Parse the response JSON and extract the distance.
-//                    val array=response.getJSONObject("routes")
-//                    Log.d("distance",array.toString())
-//
-//                    // Do something with the distance value.
-//                },
-//                { error ->
-//                    // Handle error
-//                })
-//            queue.add(jsonObjectRequest)
 
 //    @SuppressLint("MissingPermission")
 //    override fun onMyLocationButtonClick(): Boolean {
@@ -257,54 +250,4 @@ class MapsFragment : Fragment(),OnMapReadyCallback,GoogleMap.OnMarkerClickListen
 //        }
 //        return true
 //    }
-
-//Radial serach implementation
-//                if (!Places.isInitialized()) {
-//                    Places.initialize(requireContext(), "AIzaSyBWJu44Js9xy8ZFUy1wAsxfSWmgbrtEv18")
-//                }
-//
-//                val placesClient = Places.createClient(requireContext())
-//                val radius = 5000 // in meters
-//                val type = "veterinary_care"
-//                val apiKey="AIzaSyBWJu44Js9xy8ZFUy1wAsxfSWmgbrtEv18"
-//
-//                val bounds = LatLngBounds.builder()
-//                    .include(
-//                        LatLng(
-//                            22.718137699108006 - radius / 111000.0,
-//                            75.90834320343207 - radius / (111000.0 * cos(location.latitude * Math.PI / 180.0))
-//                        )
-//                    )
-//                    .include(
-//                        LatLng(
-//                            22.718137699108006 + radius / 111000.0,
-//                            75.90834320343207 + radius / (111000.0 * cos(location.latitude * Math.PI / 180.0))
-//                        )
-//                    )
-//                    .build()
-//                val queue=Volley.newRequestQueue(requireContext())
-//                val url =
-//                    "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=22.718137699108006,75.90834320343207&radius=$radius&type=$type&key=$apiKey"
-//                val jsonObjectRequest: JsonObjectRequest =JsonObjectRequest(
-//                    Request.Method.GET,
-//                    url,
-//                    null,
-//                    {
-//                        val newsJsonArray=it.getJSONArray("results")
-//                        for (i in 0 until newsJsonArray.length()){
-//                            val newsJSONObject=newsJsonArray.getJSONObject(i)
-//                            val location =newsJSONObject.getJSONObject("geometry").getJSONObject("location")
-//                            val lat=location.getDouble("lat")
-//                            val lng=location.getDouble("lng")
-//                            val name=newsJSONObject.getString("name")
-//                            map.addMarker(MarkerOptions()
-//                                .position(LatLng(lat,lng))
-//                                .title(name)
-//                            )
-//                        }
-//                    },
-//                    {
-//
-//                    })
-//                queue.add(jsonObjectRequest)
 
