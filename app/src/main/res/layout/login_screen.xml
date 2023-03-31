@@ -18,10 +18,11 @@
 
     <ImageView
         android:id="@+id/imageView2"
+
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="16dp"
         android:padding="16dp"
         android:src="@drawable/humans_tv"
         app:layout_constraintStart_toStartOf="parent"

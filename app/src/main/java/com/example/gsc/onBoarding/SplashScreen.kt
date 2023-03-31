@@ -1,12 +1,15 @@
 package com.example.gsc.onBoarding
 
+import android.content.Context
 import android.content.Intent
+import android.location.LocationManager
 import android.os.Bundle
 import android.os.Handler
 import androidx.appcompat.app.AppCompatActivity
 import com.example.gsc.MainActivity
 import com.example.gsc.Permissions.hasLocationPermission
 import com.example.gsc.R
+import com.example.gsc.onBoarding.carouselView.CarouselView
 import com.google.firebase.auth.FirebaseAuth
 
 class SplashScreen:AppCompatActivity() {
@@ -20,23 +23,24 @@ class SplashScreen:AppCompatActivity() {
         mAuth = FirebaseAuth.getInstance()
         val currentUser = mAuth.currentUser
         if (mAuth.currentUser != null) {
-            if(hasLocationPermission(this)){
-            Handler().postDelayed(
-                {
-                    startActivity(Intent(this, MainActivity::class.java))
-                    finish()
-                }, 2800
-            )
-
-        }else{
-            startActivity(Intent(this,PermissionActivity::class.java))
+            val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            if (hasLocationPermission(this) && locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                Handler().postDelayed(
+                    {
+                        startActivity(Intent(this, MainActivity::class.java))
+                        finish()
+                    }, 2800
+                )
+            } else {
+                startActivity(Intent(this, PermissionActivity::class.java))
             }
         }
         else{
             Handler().postDelayed(
                 {
-                    startActivity(Intent(this, LoginScreen::class.java))
-                }, 2800
+                    startActivity(Intent(this, CarouselView::class.java))
+                    finish()
+                }, 2000
             )
         }
     }

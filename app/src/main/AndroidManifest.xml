@@ -35,7 +35,8 @@
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
-
+        <activity android:name=".onBoarding.carouselView.CarouselView"
+            android:exported="false"/>
         <activity
             android:name=".onBoarding.PermissionActivity"
             android:exported="false" />

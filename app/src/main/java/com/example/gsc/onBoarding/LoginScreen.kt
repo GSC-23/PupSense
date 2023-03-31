@@ -12,6 +12,7 @@ import com.example.gsc.DataClass.MarkerDataClass
 import com.example.gsc.MainActivity
 import com.example.gsc.Permissions.hasLocationPermission
 import com.example.gsc.R
+import com.example.gsc.onBoarding.carouselView.CarouselView
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -124,7 +125,7 @@ class LoginScreen:AppCompatActivity() {
                                 val b = it["ProfileCreated"].toString()
 
                                 if (b=="1") {
-                                    val dashboardIntent = Intent(this, MainActivity::class.java)
+                                    val dashboardIntent = Intent(this, PermissionActivity::class.java)
                                     startActivity(dashboardIntent)
                                     finish()
                                 }
@@ -138,7 +139,7 @@ class LoginScreen:AppCompatActivity() {
                                         .addOnSuccessListener { docref->
                                             Log.d("Account Addition","DocumentSnapshot written with ID: ${docref}.id")
                                             Toast.makeText(this,"User Created",Toast.LENGTH_SHORT).show()
-                                            val dashboardIntent = Intent(this,PermissionActivity::class.java)
+                                            val dashboardIntent = Intent(this,CarouselView::class.java)
                                             startActivity(dashboardIntent)
                                             finish()
                                         }

@@ -1,15 +1,18 @@
 package com.example.gsc.onBoarding
 
+import android.content.Context
 import android.content.Intent
+import android.location.LocationManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.provider.Settings
 import android.widget.Button
 import androidx.databinding.DataBindingUtil
 import com.example.gsc.MainActivity
 import com.example.gsc.Permissions.hasLocationPermission
 import com.example.gsc.Permissions.requestLocationPermission
 import com.example.gsc.R
-import com.example.gsc.databinding.ActivityPermissionBinding
+import com.example.gsc.onBoarding.carouselView.CarouselView
 import com.vmadalin.easypermissions.EasyPermissions
 import com.vmadalin.easypermissions.dialogs.SettingsDialog
 
@@ -20,11 +23,24 @@ class PermissionActivity : AppCompatActivity() , EasyPermissions.PermissionCallb
         setContentView(R.layout.activity_permission)
         val permissionBtn=findViewById<Button>(R.id.permissionBtn)
         permissionBtn.setOnClickListener {
-            if (hasLocationPermission(this)){
+            val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            if (hasLocationPermission(this) && locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
                 startActivity(Intent(this,MainActivity::class.java))
                 finish()
             }else{
-                requestLocationPermission(this)
+                if(hasLocationPermission(this)){
+                    val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+                    startActivity(intent)
+                }
+                else if(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
+                    requestLocationPermission(this)
+                }
+                else{
+                    requestLocationPermission(this)
+                    val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+                    startActivity(intent)
+                }
+
             }
         }
     }
