@@ -1,3 +1,4 @@
+[image](https://github.com/GSC-23/PupSense/blob/main/app/src/main/res/drawable/Component%201.png?raw=true)
 # GSCApp
 
 # PupSense:
