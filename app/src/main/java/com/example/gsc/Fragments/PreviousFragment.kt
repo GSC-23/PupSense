@@ -28,9 +28,11 @@ class PreviousFragment : Fragment() {
 
     private fun fetchData(): ArrayList<PostItem> {
         val array=ArrayList<PostItem>()
-        for (i in 1 until 10){
-                array.add(PostItem("He may have been hit, but he's not out! Our furry friend is on the road to recovery ...", R.drawable.previoushelp))
-        }
+            array.add(PostItem("He may have been hit, but he's not out! Our furry friend is on the road to recovery.", R.drawable.previoushelp))
+            array.add(PostItem("Meet our newest rescue dog! He recently survived a terrible accident and is now in our care. Despite his ordeal, he's a brave little fighter and is already responding well to treatment. We're determined to give him all the love and care he needs to make a full recovery. Stay tuned for updates on his progress!",R.drawable.ovrs_hospital))
+            array.add(PostItem("We recently took in a furry friend who was in a terrible accident. Despite the trauma he endured, he's already proving to be a fighter and is responding well to his treatments. Our team is dedicated to giving him the best care possible so he can make a full recovery. Join us on his journey and stay tuned for updates!",R.drawable.pet_exam_))
+            array.add(PostItem("Meet our newest rescue pup! She's a survivor of a terrible accident and is now in our care. We're committed to helping her heal and find a loving forever home. Follow her journey and help us spread awareness about responsible pet ownership.",R.drawable.dog_sedation))
+
         return array
     }
 }

@@ -132,14 +132,15 @@ class LoginScreen:AppCompatActivity() {
                                 else {
                                     val data= hashMapOf(
                                         "Name" to user?.displayName.toString(),
-                                        "ProfileCreated" to "1"
+                                        "ProfileCreated" to "1",
+                                        "Address" to ""
                                     )
                                     db.collection("Users").document("$uid")
                                         .set(data)
                                         .addOnSuccessListener { docref->
                                             Log.d("Account Addition","DocumentSnapshot written with ID: ${docref}.id")
                                             Toast.makeText(this,"User Created",Toast.LENGTH_SHORT).show()
-                                            val dashboardIntent = Intent(this,CarouselView::class.java)
+                                            val dashboardIntent = Intent(this,PermissionActivity::class.java)
                                             startActivity(dashboardIntent)
                                             finish()
                                         }

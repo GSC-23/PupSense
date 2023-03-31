@@ -2,8 +2,8 @@
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    app:cardElevation="12dp"
-    app:cardCornerRadius="12dp"
+    app:cardElevation="8dp"
+    app:cardCornerRadius="8dp"
     android:layout_margin="8dp"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <LinearLayout
@@ -33,11 +33,8 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="9"
-                android:ellipsize="end"
-                android:maxLines="2"
-                android:fontFamily="@font/oswald"
-                android:text="He may have been hit, but he's not out! Our furry friend is on road to recovery... "
-                android:textColor="@color/black" />
+                android:textColor="@color/black"
+                android:text="He may have been hit, but he's not out! Our furry friend is on road to recovery... " />
 
             <ImageView
                 android:id="@+id/iv_liked"

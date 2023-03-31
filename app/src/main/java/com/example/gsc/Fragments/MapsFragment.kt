@@ -36,6 +36,7 @@ import com.google.android.gms.maps.GoogleMap.OnMapClickListener
 import com.google.android.gms.maps.model.*
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.maps.DirectionsApi
 import com.google.maps.GeoApiContext
@@ -58,6 +59,8 @@ class MapsFragment : Fragment(),OnMapReadyCallback,GoogleMap.OnMarkerClickListen
     private lateinit var tvModalView:TextView
     private lateinit var bottomSheetView: FrameLayout
     private var polylines:Polyline? = null
+    private var address = ""
+    private var outputdate=""
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>
     private lateinit var map:GoogleMap
     private lateinit var fusedLocationClient: FusedLocationProviderClient
@@ -80,8 +83,11 @@ class MapsFragment : Fragment(),OnMapReadyCallback,GoogleMap.OnMarkerClickListen
             fetchData()
         }
         view?.findViewById<Button>(R.id.help_button)?.setOnClickListener {
+            val add=view.findViewById<TextView>(R.id.tv_address_modal).text
+            val time=view.findViewById<TextView>(R.id.tv_maps_time).text
             val intent=Intent(requireContext(),HelpActivity::class.java)
             intent.putExtra("latitude", passingLatlng.latitude)
+            intent.putExtra("address","$time - $add")
             intent.putExtra("longitude", passingLatlng.longitude)
             startActivity(intent)
         }
@@ -98,7 +104,6 @@ class MapsFragment : Fragment(),OnMapReadyCallback,GoogleMap.OnMarkerClickListen
                 val latitude = myData.latitude
                 val longitude = myData.longitude
                 markerList1.add(myData)
-
                 GlobalScope.launch(Dispatchers.Main){
                     val markerOptions = MarkerOptions()
                         .position(LatLng(latitude, longitude))
@@ -170,9 +175,49 @@ class MapsFragment : Fragment(),OnMapReadyCallback,GoogleMap.OnMarkerClickListen
         GlobalScope.launch (Dispatchers.IO){
             fetchData()
         }
+        subscribeToUpdates()
 
     }
 
+    private fun subscribeToUpdates() {
+        db = FirebaseFirestore.getInstance()
+        db.collection("Recent  Alerts")
+            .addSnapshotListener { snapshot, e ->
+                if (e != null) {
+                    Log.w("Listen Failed", "Listen failed.", e)
+                    return@addSnapshotListener
+                }
+
+                // Process snapshot updates
+                snapshot?.let {
+                    for (documentChange in it.documentChanges) {
+                        when (documentChange.type) {
+                            DocumentChange.Type.ADDED -> {
+                                val myData = documentChange.document.toObject(MarkerDataClass::class.java)
+                                val latitude = myData.latitude
+                                val longitude = myData.longitude
+                                markerList1.add(myData)
+
+                                GlobalScope.launch(Dispatchers.Main) {
+                                    val markerOptions = MarkerOptions()
+                                        .position(LatLng(latitude, longitude))
+                                        .icon(fromVectorToBitmap(R.drawable.baseline_pets_24,R.color.black))
+                                    map.addMarker(markerOptions)
+                                }
+                            }
+                            // Handle other document changes if needed
+                            DocumentChange.Type.MODIFIED -> {}
+                            DocumentChange.Type.REMOVED -> {}
+                        }
+                    }
+                }
+            }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        subscribeToUpdates()
+    }
     private fun getAddress(position:LatLng):String{
         val geocoder = Geocoder(requireContext(), Locale.getDefault())
         passingLatlng = position
@@ -190,7 +235,8 @@ class MapsFragment : Fragment(),OnMapReadyCallback,GoogleMap.OnMarkerClickListen
     @SuppressLint("MissingPermission")
     override fun onMarkerClick(marker: Marker): Boolean {
         polylines?.remove()
-        tvModalView.text=getAddress(marker.position)
+        address=getAddress(marker.position)
+        tvModalView.text = address
         bottomSheetBehavior.state=BottomSheetBehavior.STATE_EXPANDED
         db.collection("Recent  Alerts")
             .whereEqualTo("latitude", marker.position.latitude)
@@ -205,13 +251,11 @@ class MapsFragment : Fragment(),OnMapReadyCallback,GoogleMap.OnMarkerClickListen
                         val inputFormat = SimpleDateFormat("EEE MMM dd HH:mm:ss zzzz yyyy", Locale.ENGLISH)
                         val outputFormat = SimpleDateFormat("MMM dd hh:mm a", Locale.ENGLISH)
                         val inputDate = inputFormat.parse(timestamp.toString())
-                        val outputDate = outputFormat.format(inputDate!!)
-                        view?.findViewById<TextView>(R.id.tv_maps_time)?.text = outputDate
+                        outputdate = outputFormat.format(inputDate!!)
+                        view?.findViewById<TextView>(R.id.tv_maps_time)?.text = outputdate
                     } else {
                         Toast.makeText(requireContext(),"Error ocurred while reading database",Toast.LENGTH_SHORT).show()
                     }
-
-
                 }
             }
             .addOnFailureListener { exception ->
@@ -288,28 +332,7 @@ class MapsFragment : Fragment(),OnMapReadyCallback,GoogleMap.OnMarkerClickListen
         vectorDrawable.draw(canvas)
         return BitmapDescriptorFactory.fromBitmap(bitmap)
     }
+
     }
 
-//    @SuppressLint("MissingPermission")
-//    override fun onMyLocationButtonClick(): Boolean {
-//        fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-//            // Check if the location is not null
-//            if (location != null) {
-//                // Move the camera to the user's current location
-//                val cameraPosition = CameraPosition.Builder()
-//                    .target(LatLng(location.latitude, location.longitude))
-//                    .zoom(15f)
-//                    .build()
-//                map.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
-//            } else {
-//                // If the location is null, show a toast message
-//                Toast.makeText(
-//                    requireContext(),
-//                    "Unable to get current location",
-//                    Toast.LENGTH_SHORT
-//                ).show()
-//            }
-//        }
-//        return true
-//    }
 

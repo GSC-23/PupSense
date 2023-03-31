@@ -7,6 +7,8 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Button
+import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -23,7 +25,9 @@ import com.facebook.shimmer.ShimmerFrameLayout
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.libraries.places.api.Places
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import com.google.maps.DirectionsApi
 import com.google.maps.GeoApiContext
 import com.google.maps.model.DirectionsResult
@@ -34,10 +38,12 @@ import java.lang.Math.cos
 import java.net.URL
 
 class HelpActivity : AppCompatActivity(),directionButtonClicked {
+    private var mAuth:FirebaseAuth= FirebaseAuth.getInstance()
     private lateinit var data :ArrayList<HelpActivityDataClass>
     private lateinit var helpRecyclerAdapter:HelpRecyclerAdapter
     private lateinit var shimmerLayout :ShimmerFrameLayout
     private var latitude:Double = 0.0
+    private var address:String=""
     private var longitude:Double = 0.0
     private lateinit var recyclerView:RecyclerView
     private lateinit var directionButton: Button
@@ -48,6 +54,7 @@ class HelpActivity : AppCompatActivity(),directionButtonClicked {
         recyclerView=findViewById(R.id.rv_hospitals)
         shimmerLayout=findViewById(R.id.shimmer_layout)
         shimmerLayout.startShimmer()
+        address= intent.getStringExtra("address")!!
         latitude=intent.getDoubleExtra("latitude",3.0)
         longitude=intent.getDoubleExtra("longitude",0.0)
         val recyclerView = findViewById<RecyclerView>(R.id.rv_hospitals)
@@ -70,7 +77,7 @@ class HelpActivity : AppCompatActivity(),directionButtonClicked {
         }
 
         val placesClient = Places.createClient(this)
-        val radius = 2000 // in meters
+        val radius = 4000 // in meters
         val type = "veterinary_care"
 
         val queue = Volley.newRequestQueue(this)
@@ -79,14 +86,19 @@ class HelpActivity : AppCompatActivity(),directionButtonClicked {
 
         val jsonObjectRequest = JsonObjectRequest(Request.Method.GET, url, null,
             { response ->
-                val JsonArray=response.getJSONArray("results")
-                if(JsonArray.length()==0){
-                    runOnUiThread {
+                val JsonArray = response.getJSONArray("results")
+                if (JsonArray.length() == 0) {
+                    runOnUiThread{
                         shimmerLayout.stopShimmer()
                         shimmerLayout.visibility = View.GONE
-                        Toast.makeText(this, "No hospitals nearby !!", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            this@HelpActivity,
+                            "No hospitals nearby !!",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
-                }
+                }else{
+
 
                 val data = mutableListOf<HelpActivityDataClass>()
                 for (i in 0 until JsonArray.length()) {
@@ -108,7 +120,7 @@ class HelpActivity : AppCompatActivity(),directionButtonClicked {
 
                     data.add(HelpActivityDataClass(name, address, destination = destination))
                 }
-                GlobalScope.launch(Dispatchers.IO){
+                GlobalScope.launch(Dispatchers.IO) {
                     val directionsResults = mutableListOf<DirectionsResult>()
                     for (destination in data.map { it.destination }) {
                         val directionsResult = DirectionsApi.newRequest(context)
@@ -125,28 +137,42 @@ class HelpActivity : AppCompatActivity(),directionButtonClicked {
                         val polyline = directionsResult.routes[0].overviewPolyline
                         val distance = directionsResult.routes[0].legs[0].distance
                         val origin = com.google.maps.model.LatLng(latitude, longitude)
-                        val destination:com.google.maps.model.LatLng = com.google.maps.model.LatLng(JsonObject.getJSONObject("geometry").getJSONObject("location").getString("lat").toDouble(), JsonObject.getJSONObject("geometry").getJSONObject("location").getString("lng").toDouble())
+                        val destination: com.google.maps.model.LatLng =
+                            com.google.maps.model.LatLng(
+                                JsonObject.getJSONObject("geometry").getJSONObject("location")
+                                    .getString("lat").toDouble(),
+                                JsonObject.getJSONObject("geometry").getJSONObject("location")
+                                    .getString("lng").toDouble()
+                            )
                         val staticMapUrl = "https://maps.googleapis.com/maps/api/staticmap" +
                                 "?size=600x400" + "&zoom=13" +
-                                "&maptype=roadmap"+"&path=enc:${polyline.encodedPath}" +
+                                "&maptype=roadmap" + "&path=enc:${polyline.encodedPath}" +
                                 "&markers=color:green|label:S|${origin}" +
                                 "&markers=color:red|label:D|${destination}" +
                                 "&key=$API_KEY"
                         val name = JsonObject.getString("name")
                         var address = ""
                         if (JsonObject.has("plus_code") && !JsonObject.isNull("plus_code")) {
-                            address = JsonObject.getJSONObject("plus_code").getString("compound_code")
+                            address =
+                                JsonObject.getJSONObject("plus_code").getString("compound_code")
                         }
-                        newData.add(HelpActivityDataClass(name, address, staticMapUrl, origin, destination, distance.humanReadable.substringBefore(" ").toDouble()))
+                        newData.add(
+                            HelpActivityDataClass(
+                                name,
+                                address,
+                                staticMapUrl,
+                                origin,
+                                destination,
+                                distance.humanReadable.substringBefore(" ").toDouble()
+                            )
+                        )
                     }
                     data.clear()
-                    data.addAll(newData)
-                    helpRecyclerAdapter= HelpRecyclerAdapter(data,this@HelpActivity)
+                    data.addAll(newData.sortedBy { it.distance })
+                    helpRecyclerAdapter = HelpRecyclerAdapter(data, this@HelpActivity)
                     runOnUiThread {
                         recyclerView.adapter = helpRecyclerAdapter
                         helpRecyclerAdapter?.notifyDataSetChanged()
-
-
                         if (helpRecyclerAdapter?.itemCount ?: 0 > 0) {
                             // RecyclerView is ready to display data
                             shimmerLayout.stopShimmer()
@@ -161,6 +187,7 @@ class HelpActivity : AppCompatActivity(),directionButtonClicked {
                     }
 
                 }
+            }
             },
             { error ->
             }
@@ -186,11 +213,20 @@ class HelpActivity : AppCompatActivity(),directionButtonClicked {
     }
 
     fun onSavedBtnClicked(view: View) {
+        val user=mAuth.currentUser!!
         val db = FirebaseFirestore.getInstance()
         val locationsRef = db.collection("Recent  Alerts")
         val query = locationsRef.whereEqualTo("latitude", latitude)
             .whereEqualTo("longitude", longitude)
-
+        val data= hashMapOf(
+            "user" to user.uid,
+            "address" to address
+        )
+        db.collection("Saves").document()
+            .set(data)
+            .addOnSuccessListener {
+                Log.d("Chala gya","done")
+            }
         query.get().addOnSuccessListener { documents ->
             for (document in documents) {
                 document.reference.delete()

@@ -38,10 +38,10 @@ class SplashScreen:AppCompatActivity() {
         else{
             Handler().postDelayed(
                 {
-                    startActivity(Intent(this, CarouselView::class.java))
+                    startActivity(Intent(this, LoginScreen::class.java))
                     finish()
                 }, 2000
             )
         }
+        }
     }
-}

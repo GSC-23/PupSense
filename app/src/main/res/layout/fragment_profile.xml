@@ -139,31 +139,7 @@
                                 android:textSize="18sp" />
                         </LinearLayout>
 
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="24dp"
-                            android:orientation="horizontal">
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:padding="4dp"
-                                android:text=" Contact No - "
-                                android:textColor="@color/black"
-                                android:textSize="18sp"
-                                app:drawableStartCompat="@drawable/baseline_phone_24" />
-
-                            <TextView
-                                android:id="@+id/profile_contactNo_tv"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:gravity="center_vertical"
-                                android:text="+91 78693-97615"
-                                android:textColor="@color/black"
-                                android:textSize="18sp" />
-                        </LinearLayout>
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -191,8 +167,33 @@
                                 android:textColor="@color/black"
                                 android:textSize="18sp" />
                         </LinearLayout>
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="24dp"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:padding="4dp"
+                                android:text=" Contact No - +91 78693-97615"
+                                android:textColor="@color/black"
+                                android:textSize="18sp"
+                                app:drawableStartCompat="@drawable/baseline_call_24"
+                               />
+
+                            <TextView
+                                android:id="@+id/profile_contactNo_tv"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text=""
+                                android:textColor="@color/black"
+                                android:textSize="18sp" />
+                        </LinearLayout>
 
                     </LinearLayout>
+
 
 
                 </com.google.android.material.card.MaterialCardView>
@@ -202,18 +203,28 @@
                     android:id="@+id/profile_pasthelps_rv"
                     android:layout_width="match_parent"
                     android:layout_height="300dp"
-                    android:layout_marginTop="16dp"
                     android:layout_marginStart="8dp"
                     android:layout_marginEnd="8dp"
                     app:cardCornerRadius="4dp"
                  >
-
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Past Records"
+                        android:textColor="@color/black"
+                        android:textStyle="bold"
+                        android:textSize="18sp"
+                        android:padding="8dp"/>
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/rv_pastHelp"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:layout_margin="4dp"
-                        android:padding="16dp" />
+                        android:layout_marginStart="4dp"
+                        android:layout_marginEnd="4dp"
+
+                        android:layout_marginTop="42dp"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"/>
 
 
                 </com.google.android.material.card.MaterialCardView>
