@@ -30,6 +30,11 @@ PupSense application serves as a medium to make the coordination between NGO's a
 
 # Screenshots:
 
+![image](https://github.com/GSC-23/PupSense/blob/main/app/src/main/res/drawable/2023-03-31_23-53.png?raw=true)
+![image](https://github.com/GSC-23/PupSense/blob/main/app/src/main/res/drawable/2023-03-31_23-56.png?raw=true)
+![iamge](https://github.com/GSC-23/PupSense/blob/main/app/src/main/res/drawable/2023-03-31_23-54.png?raw=true)
+![image](https://github.com/GSC-23/PupSense/blob/main/app/src/main/res/drawable/2023-04-01_00-01.png?raw=true)
+
 # Links:
 * Github Repository link - [Github](https://github.com/GSC-23/PupSense)   
 * Apk - [Drive link](https://drive.google.com/file/d/1m6zPFwfwwQ-Sin2gBBWoUvPgjOMstj0k/view?usp=sharing)
